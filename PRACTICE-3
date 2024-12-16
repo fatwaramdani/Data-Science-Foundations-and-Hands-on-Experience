@@ -1,3 +1,7 @@
+##############
+# PRACTICE 3 #
+##############
+
 # Check your current working directory
 getwd()
 
@@ -24,6 +28,10 @@ View(AWH)
 colnames(AWH)[c(1,4,5,6)] <- c("Country", "WH", "GDP", "POP")
 View(AWH)
 
+###################
+# Subsetting Data #
+###################
+
 # Subset single data
 df_japan <- subset(AWH, Country == "Japan")
 View(df_japan)
@@ -32,12 +40,20 @@ View(df_japan)
 df_japan <- df_japan[,-c(4,5,7)]
 View(df_japan)
 
+####################
+# Visualizing Data #
+####################
+
 # Install and load the library
 install.packages("ggplot2")
 library(ggplot2)
 
 # Plot the graph
 ggplot(df_japan, aes(x = Year, y = POP, color = Country)) + geom_line() + labs(x = "Year", y = "Population", color = "Country")
+
+#######################################
+# Analyze Data for Multiple Countries #
+#######################################
 
 # Load necessary libraries
 library(dplyr)
