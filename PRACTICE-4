@@ -1,0 +1,191 @@
+# Check your current working directory
+getwd()
+
+# Set your working directory (replace the path with your folder location)
+setwd("/Users/fatwaramdani/Documents/annual-working-hours-vs-gdp-per-capita-pwt")
+
+# Install required packages
+install.packages(c("ggplot2", "dplyr", "readr"))
+
+# Load required packages
+library(ggplot2)
+library(dplyr)
+library(readr)
+
+# Import dataset
+AWH <- read.csv("annual-working-hours-vs-gdp-per-capita-pwt.csv")
+
+# Rename only the 1st, 4th to 7th column names
+colnames(AWH)[c(1,4,5,6,7)] <- c("Country", "WH", "GDP", "POP", "Continent")
+
+# Update column "Continent"
+install.packages("countrycode")
+library(countrycode)
+
+# Use countrycode to map countries to continents
+AWH$Continent <- countrycode(AWH$Country, "country.name", "continent")
+
+# View the updated dataframe
+View(AWH)
+
+# Remove NA values
+AWH <- na.omit(AWH)
+
+# Calculate mean, median, and mode
+mean_GDP <- mean(AWH$GDP)
+median_GDP <- median(AWH$GDP)
+mode_GDP <- names(table(AWH$GDP))[which.max(table(AWH$GDP))]
+# Calculate range, variance, and standard deviation
+range_GDP <- range(AWH$GDP)
+variance_GDP <- var(AWH$GDP)
+sd_GDP <- sd(AWH$GDP)
+
+# Print the result into the console
+mean_GDP 
+median_GDP 
+mode_GDP
+range_GDP
+variance_GDP
+sd_GDP
+
+
+# Draw histogram
+ggplot(AWH, aes(x = GDP)) +
+  geom_histogram(aes(y = ..density..), bins = 30, fill = "blue", alpha = 0.7) +
+  geom_density(color = "red", size = 1) +
+  labs(title = "Histogram with Density", x = "GDP", y = "Density")
+
+library(e1071)
+# Calculate skewness and kurtosis
+skewness_GDP <- skewness(AWH$GDP)
+kurtosis_GDP <- kurtosis(AWH$GDP)
+
+# Print the result into the console
+skewness_GDP
+kurtosis_GDP
+
+# Example 1: Basic summary
+summary(AWH)
+
+# Example 2: Create custom summary table
+summary_stats <- data.frame(
+  Mean = sapply(AWH[, c("WH", "GDP", "POP")], mean),
+  Median = sapply(AWH[, c("WH", "GDP", "POP")], median),
+  SD = sapply(AWH[, c("WH", "GDP", "POP")], sd),
+  Min = sapply(AWH[, c("WH", "GDP", "POP")], min),
+  Max = sapply(AWH[, c("WH", "GDP", "POP")], max)
+)
+# Print the summary table
+print(summary_stats)
+
+# Example 3: Using skimr
+install.packages("skimr")
+library(skimr)
+skim(AWH)
+
+# Example 4: Pretty tables with flextable and janitor
+install.packages(c("flextable", "janitor"))
+library(flextable)
+library(janitor)
+
+AWH %>%
+  tabyl(Continent, Year) %>% 
+  adorn_totals(where = "col") %>% 
+  adorn_percentages(denominator = "col") %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns(position = "front") %>% 
+  flextable::flextable() %>% 
+  flextable::autofit()
+
+# Install the package
+install.packages("tseries")
+
+# Load required library
+library(tseries)
+
+# Test the hypotheses
+jarque.bera.test(AWH$WH)
+
+# Create the bubble plot
+ggplot(AWH, aes(x = GDP, y = WH, size = POP, color = Continent)) +
+  geom_point(alpha = 0.7) +
+  scale_color_manual(values = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF")) +
+  scale_size(range = c(0.5, 6)) +
+  labs(title = "Annual Working Hours, GDP, and Population by Continent", 
+       x = "GDP (Millions of US Dollars)", 
+       y = "Annual Working Hours per Worker", 
+       size = "Population (Millions)", 
+       color = "Continent") +
+  theme_classic()
+
+library(ggplot2)
+library(ggrepel)
+
+# Define the conditions for extreme values
+extreme_values <- AWH %>%
+  filter(
+    WH == max(WH) | WH == min(WH) | 
+      GDP == max(GDP) | GDP == min(GDP) | 
+      POP == max(POP) | POP == min(POP)
+  )
+
+# Updated plot with country labels for extreme values
+ggplot(AWH, aes(x = GDP, y = WH, size = POP, color = Continent)) +
+  geom_point(alpha = 0.7) +
+  geom_text_repel(data = extreme_values, aes(label = Country), size = 3) +
+  scale_color_manual(values = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF")) +
+  scale_size(range = c(0.5, 6)) +
+  labs(
+    title = "Annual Working Hours, GDP, and Population by Continent",
+    x = "GDP (Millions of US Dollars)",
+    y = "Annual Working Hours per Worker",
+    size = "Population (Millions)",
+    color = "Continent"
+  ) +
+  theme_classic()
+
+# group the data by continent and select the top 20 countries by GDP
+big_gdp <- AWH %>%
+  #filter(Year == 2019) %>%
+  group_by(Continent) %>%
+  arrange(desc(GDP)) %>%
+  slice_head(n = 20)
+
+# group the data by continent and select the bottom 20 countries by GDP
+low_gdp <- AWH %>%
+  #filter(Year == 2019) %>%
+  group_by(Continent) %>%
+  arrange(GDP) %>%
+  slice_head(n = 20)
+
+# group the data by continent and select the top 20 countries by working hours
+long_working_hours <- AWH %>%
+  #filter(Year == 2019) %>%
+  group_by(Continent) %>%
+  arrange(desc(WH)) %>%
+  slice_head(n = 20)
+
+# group the data by continent and select the bottom 20 countries by working hours
+short_working_hours <- AWH %>%
+  #filter(Year == 2019) %>%
+  group_by(Continent) %>%
+  arrange(WH) %>%
+  slice_head(n = 20)
+
+# combine the selected data into a single data frame
+selected_data <- bind_rows(big_gdp, low_gdp, long_working_hours, short_working_hours)
+selected_data <- na.omit(selected_data)
+# remove duplicate rows
+#selected_data <- selected_data[!duplicated(selected_data), ]
+
+# Create histogram
+ggplot(selected_data, aes(x = WH, color = Continent)) +
+  geom_histogram(fill="white", position="dodge")
+
+# Create boxplot
+ggplot(selected_data, aes(x = Continent, y = WH, fill = Continent)) + 
+  geom_boxplot() +
+  coord_flip()
+
+
+
