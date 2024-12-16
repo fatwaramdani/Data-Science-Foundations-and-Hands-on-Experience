@@ -1,1 +1,189 @@
-Forecasting with ARIMA
+##############
+# PRACTICE 7 #
+##############
+
+# Check the current working directory
+getwd()
+
+# Set working directory
+setwd("/Users/fatwaramdani/Documents") 
+
+# Install libraries
+#install.packages(c("sf", "tmap", "leaflet")) # Install if not already installed
+library(sf)
+library(dplyr)
+library(ggplot2)
+library(tmap)
+library(leaflet)
+
+# Import Excel file
+library(readxl)
+japan_pop <- read_excel("y700203000.xlsx")
+View(japan_pop)
+
+# Create a new dataframe with selected columns
+japan_pop <- japan_pop[,c(3, 28, 34)]
+
+# Remove missing values
+japan_data <- na.omit(japan_pop)
+
+# Rename columns
+colnames(japan_data)[c(1, 2, 3)] <- c("ID", "POP10", "POP19")
+
+# Convert population columns to numeric
+japan_data$POP2010 <- as.numeric(japan_data$POP10)
+japan_data$POP2019 <- as.numeric(japan_data$POP19)
+
+# Calculate population change
+japan_data$POPULATION_CHANGE <- japan_data$POP2019 - japan_data$POP2010
+
+# Remove the row for "Japan" in the ID column
+japan_data <- subset(japan_data, ID != "Japan")
+View(japan_data)
+
+# Save the cleaned data to a CSV file
+write.csv(japan_data, "japandata.csv", row.names = FALSE)
+
+# Read the shapefile data
+japan_admin <- st_read("jpn_admbnda_adm1_2019.shp")
+
+# Check for invalid geometries
+is_valid <- st_is_valid(japan_admin)
+
+# Fix invalid geometries if necessary
+if (!all(is_valid)) {
+  japan_admin <- st_make_valid(japan_admin)
+}
+
+# Select only the prefecture name column
+japan <- japan_admin %>% select(ADM1_EN)
+
+# Rename column header
+colnames(japan)[1] <- "ID"
+
+# Replace prefecture name discrepancies
+library(stringr)
+rep_str <- c('Gunma'='Gumma', 'Hyōgo'='Hyogo', 'Kōchi'='Kochi', 'Ōita'='Oita')
+japan$ID <- str_replace_all(japan$ID, rep_str)
+
+# Remove all spaces from the "ID" column
+japan$ID <- str_trim(japan$ID)
+
+# Merge population data with shapefile data
+merge_data <- left_join(japan, japan_data, by="ID")
+
+# Quick map of 2010 population
+tm_shape(merge_data) + 
+  tm_polygons("POP2010") +
+  tmap_options(check.and.fix = TRUE, max.categories = 47)
+
+# Quick map of 2019 population
+tm_shape(merge_data) + 
+  tm_polygons("POP2019") +
+  tmap_options(check.and.fix = TRUE, max.categories = 47)
+
+# Quick map of population change
+tm_shape(merge_data) + 
+  tm_polygons("POPULATION_CHANGE") +
+  tmap_options(check.and.fix = TRUE, max.categories = 47)
+
+# Switch to interactive map view
+tmap_mode("view")
+
+# Customized map with layout
+tm_shape(merge_data) + 
+  tm_fill("POPULATION_CHANGE", palette = "RdBu",
+          style = "pretty", title = "Population Changes") +
+  tm_borders(alpha=.4) +
+  tm_compass(type="arrow", position=c("right", "top")) +
+  tm_layout(main.title = "Japan Population Changes (2010 to 2019)",
+            main.title.position = "center",
+            main.title.color = "blue", 
+            legend.text.size = 0.7,
+            legend.title.size = 1, 
+            legend.position = c("right", "bottom"), 
+            frame = FALSE)
+
+# Switch back to plot view
+tmap_mode("plot")
+
+# Map with histogram in legend
+tm_shape(merge_data) + 
+  tm_fill("POPULATION_CHANGE", style = "pretty", n = 5,
+          palette = "RdBu", title = "Population Changes", legend.hist = TRUE) +
+  tm_layout(main.title = "Japan Population Changes (2010 to 2019)",
+            main.title.position = "center",
+            main.title.color = "blue") +
+  tm_borders(alpha=.4) +
+  tm_compass(type="rose", position=c("right", "top"), size = 2)
+
+# Add scale bar and change compass style
+tm_shape(merge_data) + 
+  tm_fill("POPULATION_CHANGE", style = "pretty", n = 5,
+          palette = "RdBu", title = "Population Changes") +
+  tm_layout(main.title = "Japan Population Changes (2010 to 2019)",
+            main.title.position = "center",
+            main.title.color = "blue") +
+  tm_borders(alpha=.4) +
+  tm_compass(type="4star", position=c("right", "top"), size = 2) +
+  tm_scale_bar(
+    text.size = 0.5,
+    color.dark = "black",
+    color.light = "white",
+    lwd = 1)
+
+library(RColorBrewer)
+display.brewer.all()
+
+
+# Adds OpenStreetMap as base map
+library(tmaptools)
+library(OpenStreetMap)
+
+merge_data <- st_transform(merge_data, crs = 3857)
+
+osm_world <- read_osm(merge_data)
+
+tm_shape(osm_world) + tm_rgb()+
+  tm_shape(merge_data) + 
+  tm_fill("POPULATION_CHANGE", palette = "RdBu",
+          style = "pretty", title = "Population Changed (1,000)") +
+  tm_borders(alpha=.4) +
+  tm_compass(type="8star", position=c("right", "top"), size = 2) +
+  tm_layout(main.title = "Japan Population Changes (2010 to 2019)",
+            main.title.position = "center",
+            main.title.color = "black", 
+            legend.text.size = 0.7,
+            legend.title.size = 1, 
+            legend.position = c("right", "bottom"), 
+            frame = F)+
+  tm_scale_bar(position=c("left", "bottom"))
+
+# Option: Esri World Imagery
+esri_imagery <- read_osm(merge_data, type = "esri-imagery")
+
+tm_shape(esri_imagery) + 
+  tm_rgb() +
+  tm_shape(merge_data) + 
+  tm_bubbles(size = "POPULATION_CHANGE", 
+             col = "red",         # Set the color of circles
+             border.col = "white", # Add a white border for visibility
+             scale = 1.5,          # Adjust the size scale of bubbles
+             title.size = "Population Change (1,000)") +
+  tm_borders(alpha = 0.4) +
+  tm_compass(type = "8star", position = c("right", "top"), size = 2,
+             color.light = "white",  # Set "N" and compass face to white
+             color.dark = "white") + # Set border lines of the compass to white
+  tm_layout(main.title = "Japan Population Changes (2010 to 2019)",
+            main.title.position = "center",
+            main.title.color = "black", 
+            legend.text.size = 0.7,
+            legend.title.size = 1, 
+            legend.text.color = "white",      # Set legend text to white
+            legend.title.color = "white",    # Set legend title to white
+            legend.position = c("right", "bottom"), 
+            frame = FALSE) +
+  tm_scale_bar(position = c("left", "top"),
+               text.color = "white")         # Scale bar text to white
+
+
