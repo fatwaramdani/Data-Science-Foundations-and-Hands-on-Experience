@@ -1,3 +1,7 @@
+##############
+# PRACTICE 4 #
+##############
+
 # Check your current working directory
 getwd()
 
@@ -10,7 +14,11 @@ install.packages(c("ggplot2", "dplyr", "readr"))
 # Load required packages
 library(ggplot2)
 library(dplyr)
-library(readr)
+library(reader)
+
+####################################
+# Import Dataset and Data Cleaning #
+####################################
 
 # Import dataset
 AWH <- read.csv("annual-working-hours-vs-gdp-per-capita-pwt.csv")
@@ -30,6 +38,10 @@ View(AWH)
 
 # Remove NA values
 AWH <- na.omit(AWH)
+
+####################################
+# Perform Statistical Calculations #
+####################################
 
 # Calculate mean, median, and mode
 mean_GDP <- mean(AWH$GDP)
@@ -64,6 +76,10 @@ kurtosis_GDP <- kurtosis(AWH$GDP)
 skewness_GDP
 kurtosis_GDP
 
+##############################################################
+# Different Methods to Create Descriptive Summary Statistics #
+##############################################################
+
 # Example 1: Basic summary
 summary(AWH)
 
@@ -97,6 +113,10 @@ AWH %>%
   flextable::flextable() %>% 
   flextable::autofit()
 
+##########################
+# Inferential Statistics #
+##########################
+
 # Install the package
 install.packages("tseries")
 
@@ -105,6 +125,10 @@ library(tseries)
 
 # Test the hypotheses
 jarque.bera.test(AWH$WH)
+
+########################
+# Bubble Plot Analysis #
+########################
 
 # Create the bubble plot
 ggplot(AWH, aes(x = GDP, y = WH, size = POP, color = Continent)) +
@@ -144,6 +168,10 @@ ggplot(AWH, aes(x = GDP, y = WH, size = POP, color = Continent)) +
   ) +
   theme_classic()
 
+###############################
+# Filtering and Grouping Data #
+###############################
+
 # group the data by continent and select the top 20 countries by GDP
 big_gdp <- AWH %>%
   #filter(Year == 2019) %>%
@@ -177,6 +205,10 @@ selected_data <- bind_rows(big_gdp, low_gdp, long_working_hours, short_working_h
 selected_data <- na.omit(selected_data)
 # remove duplicate rows
 #selected_data <- selected_data[!duplicated(selected_data), ]
+
+#########################
+# Histogram and Boxplot #
+#########################
 
 # Create histogram
 ggplot(selected_data, aes(x = WH, color = Continent)) +
