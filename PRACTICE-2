@@ -1,0 +1,248 @@
+##############
+# PRACTICE 2 #
+##############
+
+# Check the current working directory
+getwd()
+
+# Set working directory
+setwd("/path/to/your/folder") # Replace with your directory
+# Load your data
+data <- read.csv("path/to/yourfile.csv")
+
+# Load your data
+data <- read.csv("yourfile.csv")
+
+install.packages("readr")
+install.packages("readxl")
+install.packages("jsonlite")
+
+# Load the required package 
+library(readxl)
+# Read Excel file
+excel_data <- read_excel(“path/to/file.xlsx", sheet = “Sheet1”)
+# Load the required package 
+library(jsonlite)
+# Read Excel file
+json_data <- fromJSON(“path/to/file.json")
+
+head(data)
+
+summary(data)
+
+str(data)
+
+dim(data)
+
+#####################################
+# Creating Random Data for Analysis #
+#####################################
+
+install.packages(c("random", "data.table")) # install multiple packages
+
+library(random)
+library(data.table)
+
+set.seed(123)
+
+n <- 100  # Define the number of samples
+age <- sample(18:65, n, replace = TRUE)
+
+gender <- sample(c("Male", "Female"), n, replace = TRUE)
+
+height <- round(rnorm(n, mean = 170, sd = 10), 2)
+
+weight <- round(rnorm(n, mean = 70, sd = 10), 2)
+
+commute_type <- sample(c("Public transportation", "Car", "Walking"), n, replace = TRUE)
+
+data <- data.frame(Age = age, Gender = gender, Height = height, Weight = weight, Commute_Type = commute_type)
+
+View(data)
+
+write.csv(data, file = "random_data.csv", row.names = FALSE)
+
+##################################
+# Clean and Pre-process the Data #
+##################################
+
+cleaned_data <- na.omit(raw_data)
+
+duplicates <- duplicated(raw_data)
+
+unique_data <- raw_data[!duplicated(raw_data), ]
+
+raw_data$Date <- as.Date(raw_data$Date, format="%Y-%m-%d")
+
+library(dplyr)
+filtered_data <- filter(raw_data, Value > 10)
+
+# Filter row based on condition
+filtered_df <- df %>% filter(column_name>0)
+
+# Select specific columns
+selected_cols <- df %>% select(column_name1, column_name2)
+
+# Rename columns
+Renamed_df <- df %>% rename(new_column_name=old_column_name)
+
+# Group by a column and summarise data
+summarized_df <- df %>% group_by(column_name) %>% summarise(avg_value = mean(value))
+
+#########################
+# Creating Spatial Data #
+#########################
+
+# Install and load the necessary packages
+install.packages(c(“sf”, "ggplot2"))
+library(sf)
+library(ggplot2)
+
+# Create a point with coordinates (longitude, latitude)
+point <- st_sfc(st_point(c(139.6917, 35.6895)), crs = 4326)
+
+# Convert to a data frame for ggplot2
+point_df <- st_as_sf(point)
+
+# Plot the point using ggplot2 with axes and a legend
+ggplot(data = point_df) +
+  geom_sf() +
+  theme_minimal() +
+  labs(title = "Point Location (Longitude, Latitude)",
+       subtitle = "Tokyo",
+       caption = "Source: Your Data") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), # Rotate x-axis labels for clarity
+        axis.text.y = element_text(angle = 45, hjust = 1)) +
+  scale_x_continuous(name = "Longitude") +
+  scale_y_continuous(name = "Latitude") +
+  theme(legend.position = "none")  # No legend is needed for a single point
+
+# Create a line by connecting two points (longitude, latitude)
+line <- st_sfc(st_linestring(matrix(c(139.6917, 35.6895, 139.7000, 35.7000), ncol = 2, byrow = TRUE)), crs = 4326)
+
+# Convert the line to a data frame for ggplot
+line_df <- as.data.frame(st_coordinates(line))
+colnames(line_df) <- c("longitude", "latitude")
+
+# Create a plot using ggplot2
+ggplot() +
+  geom_line(data = line_df, aes(x = longitude, y = latitude), color = "blue") +
+  labs(x = "Longitude", y = "Latitude", title = "Line Connecting Two Points", caption = "Source: Your Data") +
+  theme_minimal() +
+  theme(legend.position = "none")  # Remove legend since it's not needed for a simple line
+
+# Create a polygon by connecting a series of points
+polygon <- st_sfc(st_polygon(list(cbind(c(139.6917, 139.6950, 139.6970, 139.6980, 139.6917), c(35.6895, 35.6920, 35.6900, 35.6880, 35.6895)))), crs = 4326)
+
+# Convert the polygon to a data frame for ggplot
+polygon_df <- st_as_sf(polygon)
+
+# Plot using ggplot2
+ggplot() +
+  geom_sf(data = polygon_df, aes(fill = "Polygon Area"), color = "blue") +
+  scale_fill_manual(values = "lightblue", name = "Legend") +
+  labs(title = "Polygon Plot with Axes and Legend",
+       x = "Longitude",
+       y = "Latitude",
+       caption = "Source: Your Data") +
+  theme_minimal() +
+  theme(legend.position = "topright")
+
+###########################
+# Creating character data #
+###########################
+
+# Creating sample data
+customer_reviews <- c("The product is amazing!", "I'm very happy with my purchase.", "The quality is poor.", "It's a great value for money.", "I would highly recommend it.", "I'm disappointed with the service.", "The product arrived damaged.")
+
+# Install and load necessary packages
+install.packages("tidyverse")
+install.packages("tm")
+install.packages("SnowballC")
+install.packages("wordcloud")
+install.packages("RColorBrewer")
+
+library(tidyverse)
+library(tm)
+library(SnowballC)
+# Load the necessary libraries
+library(tm)  # For text mining
+library(dplyr)  # For data manipulation
+library(tidyr)  # For data cleaning
+
+# Read the data
+data <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7, 8),
+                   comment = c("Great product! I love it.",
+                               "The service was terrible.",
+                               "This is an awesome book.",
+                               "I'm not satisfied with the quality.",
+                               "The food was delicious.",
+                               "What a great product!",
+                               "This is great!",
+                               "Awesome, I am satisfied"))
+
+# Create a corpus of the comments column
+corpus <- Corpus(VectorSource(data$comment))
+
+# Preprocess the text
+corpus <- tm_map(corpus, removePunctuation)
+corpus <- tm_map(corpus, tolower)
+corpus <- tm_map(corpus, removeWords, stopwords("english"))
+corpus <- tm_map(corpus, stripWhitespace)
+
+# Create a term document matrix
+tdm <- TermDocumentMatrix(corpus)
+
+# Inspect the document-term matrix
+inspect(tdm)
+
+# Convert the tdm to a matrix
+m <- as.matrix(tdm)
+
+# Get the frequency of each word
+v <- sort(rowSums(m), decreasing=TRUE)
+
+# Create a dataframe with the words and their frequency
+df <- data.frame(word = names(v), freq = v)
+
+set.seed(1234) # for reproducibility 
+
+# Plot the word cloud
+library(wordcloud)
+wordcloud(words = df$word, freq = df$freq, min.freq = 1, relative_scaling=1,
+          max.words = 200, random.order = FALSE, rot.per = 0.35, 
+          colors = brewer.pal(8, "Dark2"))
+
+####################
+# Image Processing #
+####################
+
+# Install 
+install.packages("imager")
+
+# Load required packages
+library(imager)
+
+# Load image
+image <- load.image("/Users/fatwaramdani/Documents/image.jpg")
+
+# Display the original image
+plot(image)
+
+# Convert image to grayscale
+gray_image <- grayscale(image)
+
+# Display grayscale image
+plot(gray_image)
+
+# Invert grayscale image
+inverted_gray_image <- 1 - gray_image
+
+# Display inverted grayscale image
+plot(inverted_gray_image)
+
+# Save inverted grayscale image
+save.image(inverted_gray_image, "inverted_gray_image.jpg")
+
+
+
