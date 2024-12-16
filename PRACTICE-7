@@ -44,6 +44,10 @@ View(japan_data)
 # Save the cleaned data to a CSV file
 write.csv(japan_data, "japandata.csv", row.names = FALSE)
 
+############################
+# Working with Raster Data #
+############################
+
 # Read the shapefile data
 japan_admin <- st_read("jpn_admbnda_adm1_2019.shp")
 
@@ -186,4 +190,281 @@ tm_shape(esri_imagery) +
   tm_scale_bar(position = c("left", "top"),
                text.color = "white")         # Scale bar text to white
 
+############################
+# Working with Raster Data #
+############################
+
+# Check the current working directory
+getwd()
+
+# Set working directory
+setwd("/Users/fatwaramdani/Documents/Inashiki") # Replace with your directory
+
+# install the randomForest package
+#install.packages('randomForest')
+#install.packages(c("randomForest", "terra"))
+# load the package to get access to the package's routines/functions in your environment
+library(randomForest)
+library(terra)
+
+# Create SpatRaster objects for single Sentinel layers (bands)
+b3 <- rast('2024-05-11-00:00_2024-05-11-23:59_Sentinel-2_L1C_B03.tiff') #Band Green
+b4 <- rast('2024-05-11-00:00_2024-05-11-23:59_Sentinel-2_L1C_B04.tiff') #Band Red
+b6 <- rast('2024-05-11-00:00_2024-05-11-23:59_Sentinel-2_L1C_B06.tiff') #Band Vegetation red edge
+b8 <- rast('2024-05-11-00:00_2024-05-11-23:59_Sentinel-2_L1C_B06.tiff') #Band NIR
+
+# Create a SpatRaster with multiple layers from the existing SpatRaster (single layer) objects.
+sentinel <- c(b3, b4, b6, b8)
+names(sentinel) <- c('Green', 'Red', 'Red.Edge', 'NIR')
+names(sentinel)
+
+print(sentinel)
+
+# Plot the RGB false color composite (FCC) - false colour of vegetation (NIR-Red-Green)
+plotRGB(sentinel, r=4, g=2, b=1, stretch = "lin")
+plotRGB(sentinel, r=4, g=2, b=1, stretch = "his")
+
+# Calculate NDVI
+NDVI <- (b8-b4)/(b8+b4)
+plot(NDVI, col= rev(terrain.colors(10)))
+
+# load polygons with land use land cover information
+# Install the sf package if not already installed
+#install.packages("sf")
+
+# Load the package
+library(sf)
+
+# Load a shapefile
+shapefile <- st_read("ROI.shp")
+print(shapefile)
+
+# Plot the shapefile
+plot(shapefile["geometry"])
+text(shapefile, shapefile$Class)
+
+# Generate random points within each polygons.
+set.seed(123)
+
+# Convert shapefile to SpatVector and sample points
+shapefile_vect <- vect(shapefile)
+ptsamp <- spatSample(shapefile_vect, 300, method="random")
+plot(ptsamp, "Class")
+
+class(sentinel)
+class(ptsamp)
+
+# Extract reflectance values
+df <- extract(sentinel, ptsamp, ID=FALSE)
+
+# Combine land-use class with reflectance values
+sampdata <- data.frame(class = ptsamp$Class, df)
+
+# Train the classification algorithm using sampdata dataset.
+#install.packages("rpart")
+library(rpart)
+
+cartmodel <- rpart(as.factor(class) ~ ., data = sampdata, method='class', minsplit=5)
+
+# Visualize the model
+plot(cartmodel, uniform=TRUE, main="Classification Tree")
+text(cartmodel, cex=1)
+
+# Predict LULC classes
+classified <- predict(sentinel, cartmodel, na.rm=TRUE)
+
+# Plot classified raster
+plot(classified)
+
+# Observe that there are 7 layers in the classified object, 
+# each of the layer representing the probability of a particular LULC class. 
+# Below, we make a SpatRaster that shows, for each grid cell, 
+# the LULC class with the highest probability.
+
+# Identify the class with the highest probability
+lulc <- which.max(classified)
+
+# Perform sieve analysis to remove small patches (salt-and-pepper noise)
+# Define a minimum patch size (e.g., 5 pixels)
+lulc_sieved <- sieve(lulc, threshold=5)
+
+# Set up a top-down layout
+par(mfrow=c(2, 1))  # 2 rows, 1 column
+
+# Plot the raw classified map
+plot(lulc, main="Classified Map(Raw)")
+
+# Plot the processed classified map
+plot(lulc_sieved, main="Classified Map (Salt-and-Pepper Minimized)")
+
+# Save the classified raster to a file
+writeRaster(lulc, "classified_map_raw.tif", overwrite = TRUE)
+writeRaster(lulc_sieved, "classified_map_sieved.tif", overwrite=TRUE)
+
+# Load necessary library
+library(tmap)
+
+# Assign class names and colors using a two-column data frame
+cls <- c("Agriculture", "Urban", "NaN", "Solar.Panel", "Bareland", "Vegetation", "Water")
+df <- data.frame(id = 1:7, class=cls)
+levels(lulc_sieved) <- df
+
+# Define custom colors
+mycolor <- c("purple", "red", "white", "grey", "orange", "green", "blue")
+
+# Create the map using tmap
+map <- tm_shape(lulc_sieved) +
+  tm_raster(palette = mycolor, title = "Legend") +
+  tm_layout(
+    main.title = "Land Use Land Cover Map",
+    legend.outside = FALSE,
+    legend.position = c("right", "top")
+  ) +
+  tm_scale_bar() +
+  tm_compass(position = c("left", "top"))
+
+# Plot the map
+map
+
+# Save the classified map as a GeoTIFF file into the working folder
+writeRaster(lulc_sieved, "classified_map_sieved.tif", overwrite = TRUE)
+
+# Calculate the area of each class in the sieved classified map (lulc)
+# Define class labels
+class_labels <- c("Agriculture", "Urban", "NaN", "Solar.Panel", "Bareland", "Vegetation", "Water")
+
+# Calculate the area of each class in the raw classified map (lulc)
+# Get the resolution of the raster (pixel size)
+cell_area_m2 <- res(lulc_sieved)[1] * res(lulc_sieved)[2]  # in square meters
+
+# Convert the raster values to a table of counts for each class
+class_counts <- table(values(lulc_sieved))
+
+# Calculate the area in square meters for each class
+class_area_m2 <- class_counts * cell_area_m2
+
+# Convert area to hectares (1 hectare = 10,000 m^2)
+class_area_ha <- class_area_m2 / 10000
+
+# Create a named vector with class labels and area in hectares
+class_area_named <- setNames(class_area_ha, class_labels)
+
+# Print the area in hectares for each class with names
+print(class_area_named)
+
+#########################
+# Working with DEM Data #
+#########################
+
+# Check the current working directory
+getwd()
+
+# Set working directory
+setwd("/Users/fatwaramdani/Documents")
+
+# Load required packages
+library(raster)
+library(rasterVis)
+library(rayshader)
+
+# Load the DEM data
+dem <- raster("ALPSMLC30_N035E138_DSM.tif")
+
+# Plot the DEM
+plot(dem, col = topo.colors(20))
+
+# Visualize the DEM
+levelplot(dem, margin = FALSE, col.regions = terrain.colors(255))
+
+# Convert raster to matrix
+fuji.new <- raster_to_matrix(dem)
+
+# Visualize the DEM using hillshade technique
+fuji.new %>% sphere_shade(sunangle = 45, texture = "desert") %>%
+  plot_map()
+
+######################################
+# Working with Night Time Light Data #
+######################################
+
+# Check the current working directory
+getwd()
+
+# Set working directory
+setwd("/Users/fatwaramdani/Documents") # Replace with your directory
+
+# Load packages
+library(blackmarbler)
+library(geodata)
+library(sf)
+library(terra)
+library(ggplot2)
+library(tidyterra)
+library(lubridate)
+
+#### Define NASA bearer token
+bearer <- "eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJzaWciOiJlZGxqd3RwdWJrZXlfb3BzIiwiYWxnIjoiUlMyNTYifQ.eyJ0eXBlIjoiVXNlciIsInVpZCI6ImZhdHdhMTkiLCJleHAiOjE3MzU0NTEwNTEsImlhdCI6MTczMDI2NzA1MSwiaXNzIjoiaHR0cHM6Ly91cnMuZWFydGhkYXRhLm5hc2EuZ292In0.kblKg-bHdGYwZWAo9AcqcjbJh42keIlMtFmLQ5CONrTDl8_DAbqjnNMA3ZYT0Lh9JAkmbk994wZsK_bAjnHyoNAi5sdsTRvpTNppxP5G1OtZXyuzDTMl0oJPI_HQIosAJIk1rygYGlVuYSTlLKaMZ31Bk15eC1DkJ-IRnmkWS1UmeXlLikPCtz04YnECTF3Tlesu6u-uw5lblZ-2osXVH91QqpNFMqZBXmbbeADHmh_umg9X8OfWFk1w8QrRSqZu4788otWmdR9z_jR0y9sV5ghISnR9kJ6bSmDPWANSV7v9zOQUlDxyiuSdUqDC5XQuFM_8aYG5-qaIUq2yYOC4bQ"
+
+# Define Region of Interest (ROI)
+# Check country codes
+cc <- country_codes()
+head(cc)
+
+# Query for Palestine
+p <- country_codes(query="Palestin")
+p
+
+# Define ROI
+roi_sf <- gadm(country = "PSE", level = 1, path = tempdir())
+
+# Fetch Nighttime Lights Data for 2014 and 2024
+r2014 <- bm_raster(roi_sf = roi_sf, product_id = "VNP46A3", date = "2014-06-01", bearer = bearer)
+r2024 <- bm_raster(roi_sf = roi_sf, product_id = "VNP46A3", date = "2024-06-01", bearer = bearer)
+
+# Mask and Log-transform Data
+r2014 <- terra::mask(r2014, roi_sf)
+r2024 <- terra::mask(r2024, roi_sf)
+
+# Log-transform data
+r2014[] <- log(r2014[] + 1)
+r2024[] <- log(r2024[] + 1)
+
+# Compute Difference
+r_diff <- r2024 - r2014
+
+# Plot Change Map
+change_map <- ggplot() +
+  geom_spatraster(data = r_diff) +
+  scale_fill_gradient2(low = "black", mid = "white", high = "red", midpoint = 0, na.value = "transparent",
+                       name = "Change in NTL") +
+  labs(title = "Change in Nighttime Lights Radiance (2014-2024)") +
+  coord_sf() +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold", hjust = 0.5))
+
+print(change_map)
+
+# Extract Monthly Trends for NTL
+ntl_df_monthly <- bm_extract(roi_sf = roi_sf, product_id = "VNP46A3", 
+date = seq.Date(from = as.Date("2023-01-01"), 
+to = as.Date("2024-06-01"), 
+by = "month"), bearer = bearer, check_all_tiles_exist = FALSE)
+
+# Plot monthly trends
+ntl_df_monthly |>
+  ggplot() +
+  geom_col(aes(x = date, y = ntl_mean), fill = "darkorange") +
+  facet_wrap(~NAME_1) +
+  labs(x = NULL, 
+       y = "NTL Luminosity", 
+       title = "Palestine Admin Level 1: Monthly Average Nighttime Lights") +
+  scale_x_date(labels = scales::date_format("%b %Y"),
+               breaks = scales::date_breaks("2 month")) +
+  theme_minimal() +
+  theme(strip.text = element_text(face = "bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1))  # Diagonal x-axis labels
+
+# Save Data and Rasters
+write.csv(ntl_df_monthly, "NTL_Trends_2014_2024.csv", row.names = FALSE)
+writeRaster(r_diff, "NTL_Change_2014_2024.tif", filetype = "GTiff", overwrite = TRUE)
 
