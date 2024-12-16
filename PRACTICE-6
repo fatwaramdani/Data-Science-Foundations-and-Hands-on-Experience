@@ -1,0 +1,157 @@
+##############
+# PRACTICE 6 #
+##############
+
+# Check the current working directory
+getwd()
+
+# Set working directory
+setwd("/Users/fatwaramdani/Documents")
+
+# Load libraries
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(tidyr)
+library(lubridate)
+
+###################################
+# Importing and Cleaning the Data #
+###################################
+
+# Import data
+data <- read_csv("sakura_first_bloom_dates.csv")
+
+# Handle missing values
+data_cleaned <- na.omit(data)
+summary(data_cleaned)
+
+# Remove unnecessary columns
+data_cleaned[ , c('Currently Being Observed', 
+                  '30 Year Average 1981-2010', 
+                  'Notes')] <- list(NULL)
+
+# Rename the first column
+colnames(data_cleaned)[1] <- "Site"
+summary(data_cleaned)
+
+# Identify year columns
+year_cols <- names(data_cleaned)[2:ncol(data)]
+print(year_cols)
+
+# Convert year columns to numeric
+data_cleaned[, year_cols] <- lapply(data_cleaned[, year_cols], as.numeric)
+
+# Reshape data to long format
+data_cleaned <- gather(data_cleaned, key = year, value = value, -Site)
+View(data_cleaned)
+
+# Extract year, month, and date
+data_cleaned$year <- substr(data_cleaned$value, 1, 4)
+data_cleaned$month <- substr(data_cleaned$value, 6, 7)
+data_cleaned$date <- substr(data_cleaned$value, 9, 10)
+
+# Convert to numeric
+data_cleaned$year <- as.numeric(data_cleaned$year)
+data_cleaned$month <- as.numeric(data_cleaned$month)
+data_cleaned$date <- as.numeric(data_cleaned$date)
+
+# Create a day-of-year (DOY) column
+data_cleaned$doy <- yday(data_cleaned$value)
+View(data_cleaned)
+
+########################
+# Visualizing the Data #
+########################
+
+# Simple time-series plot
+plot(data_cleaned$year, data_cleaned$doy, 
+     type = "l", main = "Sakura First Bloom Over Time", 
+     xlab = "Year", ylab = "Day of Year", col = "black")
+
+# Function to shade a month and add text label
+shade_month <- function(start_day, end_day, label, color, text_x, text_y, label_color = rgb(0, 0.39, 0, 1)) {
+  x_coords <- c(min(data_cleaned$year), max(data_cleaned$year), max(data_cleaned$year), min(data_cleaned$year))
+  y_coords <- c(start_day, start_day, end_day, end_day)
+  polygon(x_coords, y_coords, col = color, border = NA)
+  text(x = text_x, y = text_y, labels = label, col = label_color)
+}
+
+# Shade the area for April
+shade_month(91, 121, "April", rgb(0.6, 1, 0.6, 0.5), 1960, 119)
+
+# Shade the area for May
+shade_month(121, 151, "May", rgb(1, 0.6, 0.6, 0.5), 1960, 136)
+
+# Add additional text for earliest bloom
+text(x = 2016, y = 110, labels = "The earliest bloom at 2023", col = "black", cex = 0.7)
+
+# Plot with month on x-axis and year on the fill aesthetic
+ggplot(data_cleaned, aes(x = year, y = doy)) +
+  geom_point(aes(size = 3), alpha = 0.5) +  # Adjust point size and transparency 
+  geom_smooth(method = "lm", se = FALSE) +  # Add a linear regression line
+  labs(title = "Shift in Asahikawa and Obihiro Sakura First Blooms",
+       x = "Year", y = "First Bloom Date") +
+  theme_bw()  # Apply a black and white theme
+
+# Plot with customized point style
+ggplot(data_cleaned, aes(x = year, y = doy)) +
+  geom_point(shape = 17, size = 3, alpha = 0.5) +  # Set shape, size, and transparency
+  geom_smooth(method = "lm", se = FALSE) +  # Add a linear regression line
+  labs(title = "Shift in Asahikawa and Obihiro Sakura First Blooms",
+       x = "Year", y = "First Bloom Date") +
+  theme_bw()  # Apply a black and white theme
+
+# Code to display all available shapes in ggplot2
+library(ggplot2)
+
+shape_data <- data.frame(
+  x = rep(1:5, each = 5)[1:25],  # Adjust to match length of shape
+  y = rep(5:1, times = 5)[1:25],  # Adjust to match length of shape
+  shape = 0:24
+)
+
+ggplot(shape_data, aes(x = x, y = y)) +
+  geom_point(aes(shape = shape), size = 5) +  # Plot the shapes
+  scale_shape_identity() +  # Use shapes directly
+  geom_text(aes(label = shape), vjust = -1.5) +  # Add labels for shape codes
+  theme_void() +  # Minimal theme
+  labs(title = "Available Shapes in ggplot2")
+
+# Plot with confidence area (uncertainty)
+ggplot(data_cleaned, aes(x = year, y = doy)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(title = "Shift in Sakura First Blooms Date",
+       x = "Year",
+       y = "First Bloom Date (DOY)")
+
+##########################
+# Forecasting with ARIMA #
+##########################
+
+# Subset data for Asahikawa
+Asahikawa <- subset(data_cleaned, Site == "Asahikawa")
+Asahikawa[ , c('Site', 'year', 'value', 'month', 'date')] <- list(NULL)
+
+# Remove rows beyond 2018
+pred_Asahikawa <- Asahikawa[-c(67:71), ]
+
+# Convert to time series
+Asahikawa_ts_actual <- ts(Asahikawa, start = c(1953, 1), frequency = 1)
+Asahikawa_ts_pred <- ts(pred_Asahikawa, start = c(1953, 1), frequency = 1)
+
+# Fit ARIMA model
+install.packages("forecast")
+library(forecast)
+
+model <- auto.arima(Asahikawa_ts_pred)
+
+# Forecast next 5 values
+forecast_data <- forecast(model, 5)
+print(forecast_data)
+
+# Plot the forecast
+plot(forecast_data, main = "Forecasting for Sakura First Bloom at Asahikawa")
+lines(Asahikawa_ts_actual, type = "l", col = "red")
+
