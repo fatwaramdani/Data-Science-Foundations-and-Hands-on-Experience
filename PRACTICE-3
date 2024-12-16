@@ -1,0 +1,54 @@
+# Check your current working directory
+getwd()
+
+# Set your working directory (replace the path with your folder location)
+setwd("/Users/fatwaramdani/Documents/annual-working-hours-vs-gdp-per-capita-pwt")
+
+# Install and load the library
+install.packages("readr")
+library(readr)
+
+# Load your data (assuming it's a CSV file named "data.csv")
+AWH <- read.csv("annual-working-hours-vs-gdp-per-capita-pwt.csv")
+
+# View the first few rows of your data
+head(AWH)
+
+# Open the data in a spreadsheet-like viewer
+View(AWH)
+
+# Removing NA values
+AWH <- na.omit(AWH)
+View(AWH)
+
+colnames(AWH)[c(1,4,5,6)] <- c("Country", "WH", "GDP", "POP")
+View(AWH)
+
+# Subset single data
+df_japan <- subset(AWH, Country == "Japan")
+View(df_japan)
+
+#Delete columns
+df_japan <- df_japan[,-c(4,5,7)]
+View(df_japan)
+
+# Install and load the library
+install.packages("ggplot2")
+library(ggplot2)
+
+# Plot the graph
+ggplot(df_japan, aes(x = Year, y = POP, color = Country)) + geom_line() + labs(x = "Year", y = "Population", color = "Country")
+
+# Load necessary libraries
+library(dplyr)
+
+# Step 1: Subset data for multiple countries
+multi_country <- AWH %>% 
+  filter(Country %in% c("Japan", "United States"))  # Filter for Japan and United States
+multi_country <- multi_country[,-c(4,5,7)]         # Remove unnecessary columns (columns 4, 5, and 7)
+
+# Step 2: Create a ggplot line graph
+ggplot(multi_country, aes(x = Year, y = POP, color = Country)) +
+  geom_line() +                                    # Add a line for each country's data
+  labs(x = "Year", y = "Population", color = "Country")   # Label the axes and legend
+
