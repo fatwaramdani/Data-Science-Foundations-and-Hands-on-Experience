@@ -217,7 +217,6 @@ b8 <- rast('2024-05-11-00:00_2024-05-11-23:59_Sentinel-2_L1C_B06.tiff') #Band NI
 sentinel <- c(b3, b4, b6, b8)
 names(sentinel) <- c('Green', 'Red', 'Red.Edge', 'NIR')
 names(sentinel)
-
 print(sentinel)
 
 # Plot the RGB false color composite (FCC) - false colour of vegetation (NIR-Red-Green)
@@ -228,7 +227,11 @@ plotRGB(sentinel, r=4, g=2, b=1, stretch = "his")
 NDVI <- (b8-b4)/(b8+b4)
 plot(NDVI, col= rev(terrain.colors(10)))
 
-# load polygons with land use land cover information
+#############################################
+# Land Use Land Cover (LULC) Classification #
+#############################################
+
+# load polygons with land use land cover information (training data)
 # Install the sf package if not already installed
 #install.packages("sf")
 
@@ -254,6 +257,10 @@ plot(ptsamp, "Class")
 class(sentinel)
 class(ptsamp)
 
+###################################
+# Training a Classification Model #
+###################################
+
 # Extract reflectance values
 df <- extract(sentinel, ptsamp, ID=FALSE)
 
@@ -270,19 +277,22 @@ cartmodel <- rpart(as.factor(class) ~ ., data = sampdata, method='class', minspl
 plot(cartmodel, uniform=TRUE, main="Classification Tree")
 text(cartmodel, cex=1)
 
+###############################
+# Classifying the Raster Data #
+###############################
+
 # Predict LULC classes
 classified <- predict(sentinel, cartmodel, na.rm=TRUE)
 
 # Plot classified raster
 plot(classified)
 
-# Observe that there are 7 layers in the classified object, 
-# each of the layer representing the probability of a particular LULC class. 
-# Below, we make a SpatRaster that shows, for each grid cell, 
-# the LULC class with the highest probability.
-
 # Identify the class with the highest probability
 lulc <- which.max(classified)
+
+################################
+# Refining the Classified Data #
+################################
 
 # Perform sieve analysis to remove small patches (salt-and-pepper noise)
 # Define a minimum patch size (e.g., 5 pixels)
@@ -300,6 +310,10 @@ plot(lulc_sieved, main="Classified Map (Salt-and-Pepper Minimized)")
 # Save the classified raster to a file
 writeRaster(lulc, "classified_map_raw.tif", overwrite = TRUE)
 writeRaster(lulc_sieved, "classified_map_sieved.tif", overwrite=TRUE)
+
+########################
+# Creating a Final Map #
+########################
 
 # Load necessary library
 library(tmap)
@@ -328,6 +342,10 @@ map
 
 # Save the classified map as a GeoTIFF file into the working folder
 writeRaster(lulc_sieved, "classified_map_sieved.tif", overwrite = TRUE)
+
+#############################
+# Calculating the Area (ha) #
+#############################
 
 # Calculate the area of each class in the sieved classified map (lulc)
 # Define class labels
@@ -402,7 +420,7 @@ library(ggplot2)
 library(tidyterra)
 library(lubridate)
 
-#### Define NASA bearer token
+# NASA bearer token
 bearer <- "eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJzaWciOiJlZGxqd3RwdWJrZXlfb3BzIiwiYWxnIjoiUlMyNTYifQ.eyJ0eXBlIjoiVXNlciIsInVpZCI6ImZhdHdhMTkiLCJleHAiOjE3MzU0NTEwNTEsImlhdCI6MTczMDI2NzA1MSwiaXNzIjoiaHR0cHM6Ly91cnMuZWFydGhkYXRhLm5hc2EuZ292In0.kblKg-bHdGYwZWAo9AcqcjbJh42keIlMtFmLQ5CONrTDl8_DAbqjnNMA3ZYT0Lh9JAkmbk994wZsK_bAjnHyoNAi5sdsTRvpTNppxP5G1OtZXyuzDTMl0oJPI_HQIosAJIk1rygYGlVuYSTlLKaMZ31Bk15eC1DkJ-IRnmkWS1UmeXlLikPCtz04YnECTF3Tlesu6u-uw5lblZ-2osXVH91QqpNFMqZBXmbbeADHmh_umg9X8OfWFk1w8QrRSqZu4788otWmdR9z_jR0y9sV5ghISnR9kJ6bSmDPWANSV7v9zOQUlDxyiuSdUqDC5XQuFM_8aYG5-qaIUq2yYOC4bQ"
 
 # Define Region of Interest (ROI)
@@ -432,6 +450,10 @@ r2024[] <- log(r2024[] + 1)
 # Compute Difference
 r_diff <- r2024 - r2014
 
+#########################
+# Visualize the Changes #
+#########################
+
 # Plot Change Map
 change_map <- ggplot() +
   geom_spatraster(data = r_diff) +
@@ -443,6 +465,10 @@ change_map <- ggplot() +
   theme(plot.title = element_text(face = "bold", hjust = 0.5))
 
 print(change_map)
+
+####################################################
+# Extracting the NTL Trends and Plot using Barplot #
+####################################################
 
 # Extract Monthly Trends for NTL
 ntl_df_monthly <- bm_extract(roi_sf = roi_sf, product_id = "VNP46A3", 
