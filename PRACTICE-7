@@ -370,6 +370,17 @@ class_area_named <- setNames(class_area_ha, class_labels)
 # Print the area in hectares for each class with names
 print(class_area_named)
 
+# Shorter
+# Define class labels
+class_labels <- c("Agriculture", "Urban", "NaN", "Solar.Panel", "Bareland", "Vegetation", "Water")
+
+# Calculate class areas in hectares
+class_area_ha <- table(values(lulc_sieved)) * prod(res(lulc_sieved)) / 10000
+
+# Assign class labels and print
+names(class_area_ha) <- class_labels
+print(class_area_ha)
+
 #########################
 # Working with DEM Data #
 #########################
