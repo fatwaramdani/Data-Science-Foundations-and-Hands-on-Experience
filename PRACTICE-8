@@ -14,6 +14,10 @@ setwd("/path/to/your/folder") # Replace with your directory
 library(rvest)
 library(tidyverse)
 
+##############################
+# Web Scraping COVID-19 Data #
+##############################
+
 # Web Scraping
 covid <- read_html("https://en.wikipedia.org/wiki/Statistics_of_the_COVID-19_pandemic_in_Japan")
 
@@ -38,6 +42,10 @@ tab <- tab[-c(1, 49, 50, 51, 52),]
 tab$Prefecture[43] <- "Nagasaki Prefecture"
 tab$Cases[43] <- 1246
 
+#############################
+# Visualizing COVID-19 Data #
+#############################
+
 # Convert data types
 tab$Cases <- as.numeric(tab$Cases)
 tab$Deaths <- as.numeric(tab$Deaths)
@@ -58,6 +66,10 @@ ggplot(tab_new, aes(x = Island, y = Cases, fill = factor(Region))) +
 
 # Save in CSV format
 write.csv(tab,"your/path/jpn_covid19.csv", row.names = FALSE) # change with your path
+
+##################################
+# Mapping COVID-19 Data in Japan #
+##################################
 
 # Load shapefile and libraries
 library(sf)
@@ -130,6 +142,9 @@ tm_shape(japan_covid) +
             legend.position = c("right", "bottom"), 
             frame = T)
 
+####################
+# Advanced Mapping #
+####################
 
 # Reclassify cases
 japan_covid$Classification <- "Low"
