@@ -227,6 +227,47 @@ plotRGB(sentinel, r=4, g=2, b=1, stretch = "his")
 NDVI <- (b8-b4)/(b8+b4)
 plot(NDVI, col= rev(terrain.colors(10)))
 
+# Check NDVI statistics
+print(summary(NDVI))
+
+# Check for NA pixels
+NDVI_NA_count <- sum(is.na(NDVI[]))
+print(paste("Number of NA pixels in NDVI:", NDVI_NA_count))
+
+# Define thresholds and classify NDVI
+thresholds <- c(-0.2, 0, 0.2, 0.4, 0.5, 0.78)  # Adjust thresholds as needed
+NDVI_classes <- classify(NDVI, thresholds, include.lowest = TRUE)
+
+# Check classified raster
+plot(NDVI_classes, main = "NDVI Classes")
+
+# Frequency table of classes
+NDVI_table <- freq(NDVI_classes)
+print(NDVI_table)
+
+# Define class labels
+class_labels <- c("Very high", "High", "Medium", "Low", "Very low")
+
+# Calculate class areas in hectares
+class_area_ha <- table(values(NDVI_classes)) * prod(res(NDVI_classes)) / 10000
+
+# Assign class labels
+names(class_area_ha) <- class_labels
+
+# Convert to a data frame
+total_area <- sum(class_area_ha)
+NDVI_class_area_df <- data.frame(
+  Class = names(class_area_ha),
+  Area_Ha = as.numeric(class_area_ha),
+  Percentage = as.numeric(class_area_ha) / total_area * 100
+)
+
+# Print the result
+print(NDVI_class_area_df)
+  
+# Save as CSV
+write_csv(NDVI_class_area_df, "NDVI_Classes_Area_Percentage.csv")
+
 #############################################
 # Land Use Land Cover (LULC) Classification #
 #############################################
@@ -351,35 +392,25 @@ writeRaster(lulc_sieved, "classified_map_sieved.tif", overwrite = TRUE)
 # Define class labels
 class_labels <- c("Agriculture", "Urban", "NaN", "Solar.Panel", "Bareland", "Vegetation", "Water")
 
-# Calculate the area of each class in the raw classified map (lulc)
-# Get the resolution of the raster (pixel size)
-cell_area_m2 <- res(lulc_sieved)[1] * res(lulc_sieved)[2]  # in square meters
-
-# Convert the raster values to a table of counts for each class
-class_counts <- table(values(lulc_sieved))
-
-# Calculate the area in square meters for each class
-class_area_m2 <- class_counts * cell_area_m2
-
-# Convert area to hectares (1 hectare = 10,000 m^2)
-class_area_ha <- class_area_m2 / 10000
-
-# Create a named vector with class labels and area in hectares
-class_area_named <- setNames(class_area_ha, class_labels)
-
-# Print the area in hectares for each class with names
-print(class_area_named)
-
-# Shorter
-# Define class labels
-class_labels <- c("Agriculture", "Urban", "NaN", "Solar.Panel", "Bareland", "Vegetation", "Water")
-
 # Calculate class areas in hectares
 class_area_ha <- table(values(lulc_sieved)) * prod(res(lulc_sieved)) / 10000
 
-# Assign class labels and print
+# Assign class labels
 names(class_area_ha) <- class_labels
-print(class_area_ha)
+
+# Convert to a data frame
+total_area <- sum(class_area_ha)
+class_area_df <- data.frame(
+  Class = names(class_area_ha),
+  Area_Ha = as.numeric(class_area_ha),
+  Percentage = as.numeric(class_area_ha) / total_area * 100
+)
+
+# Save as CSV
+write.csv(class_area_df, "class_area_results.csv", row.names = FALSE)
+
+# Print the result
+print(class_area_df)
 
 #########################
 # Working with DEM Data #
