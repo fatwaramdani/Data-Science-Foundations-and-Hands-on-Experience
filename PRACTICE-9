@@ -1,0 +1,154 @@
+##############
+# PRACTICE 9 #
+##############
+
+# Check the current working directory
+getwd()
+
+# Set working directory
+setwd("/path/to/your/folder") # Replace with your directory
+
+# Load the dataset
+apple <- read.csv("Data1.csv", header = T)
+
+# View the structure of the dataset
+str(apple)
+
+######################
+# Text Preprocessing #
+######################
+
+# Load the tm library
+library(tm)
+
+# Convert text encoding and create a corpus
+corpus <- iconv(apple$text) #If error : iconv(apple$text, ‘UTF-8’, ‘ASCII’)
+
+corpus <- Corpus(VectorSource(corpus))
+
+# Text cleaning: lowercasing, removing punctuation, numbers, and stopwords
+
+# ONLY FOR MAC USER put it before “tolower” function 
+#corpus <- tm_map(corpus, PlainTextDocument)
+corpus <- tm_map(corpus, tolower)
+corpus <- tm_map(corpus, removePunctuation)
+corpus <- tm_map(corpus, removeNumbers)
+cleanset <- tm_map(corpus, removeWords, stopwords('english'))
+
+#No worries if you see a "Warning message:...". Just continue.
+
+# Remove URLs and specific words
+removeURL <- function(x) gsub('http[[:alnum:]]*', '', x)
+cleanset <- tm_map(cleanset, content_transformer(removeURL))
+cleanset <- tm_map(cleanset, removeWords, c('aapl', 'apple'))
+
+# Replace specific words and apply stemming
+cleanset <- tm_map(cleanset, gsub, pattern = 'stocks', replacement = 'stock')
+cleanset <- tm_map(cleanset, stemDocument)
+
+# Remove extra whitespaces
+cleanset <- tm_map(cleanset, stripWhitespace)
+
+#No worries if you see a "Warning message:...". Just continue.
+
+# Inspect the first five documents in the cleaned corpus
+inspect(cleanset[1:5])
+
+##############################
+# Analyzing Word Frequencies #
+##############################
+
+# Create a Term-Document Matrix
+tdm <- TermDocumentMatrix(cleanset)
+tdm <- as.matrix(tdm)
+
+# Sort words by frequency
+tdm_v <- sort(rowSums(tdm), decreasing = TRUE)
+tdm_d <- data.frame(word = names(tdm_v), freq = tdm_v)
+
+# Display the top 10 most frequent words
+head(tdm_d, 10)
+
+# Visualize the top 20 frequent words
+barplot(tdm_d[1:20, ]$freq,
+        las = 2,
+        names.arg = tdm_d[1:20, ]$word,
+        col = "lightgreen",
+        main = "Top 10 Most Frequent Words",
+        ylab = "Word Frequencies")
+
+################################
+# Visualizing Word Frequencies #
+################################
+
+# Bar plot for words with frequency >= 25
+w <- rowSums(tdm)
+w <- subset(w, w >= 25)
+barplot(w,
+        las = 2,
+        col = rainbow(50),
+        ylab = 'Count',
+        main = 'Words Frequency')
+
+# Word cloud visualization
+library(wordcloud) #install the package first if needed.
+
+w <- sort(rowSums(tdm), decreasing = TRUE)
+set.seed(123)
+wordcloud(words = names(w),
+          freq = w,
+          max.words = 150,
+          random.order = FALSE,
+          min.freq = 5,
+          colors = brewer.pal(8, 'Dark2'),
+          scale = c(5, 0.3),
+          rot.per = 0.7)
+
+# Wordcloud2 for a customized design
+install.packages("wordcloud2")
+library(wordcloud2)
+w <- data.frame(names(w), w)
+colnames(w) <- c('word', 'freq')
+set.seed(123)
+wordcloud2(w,
+           size = 0.7,
+           shape = 'diamond',
+           rotateRatio = 0.5,
+           minSize = 1)
+
+######################
+# Sentiment Analysis #
+######################
+
+# Load sentiment analysis libraries
+library(syuzhet)
+library(ggplot2)
+
+# Extract sentiments from text
+tweets <- iconv(apple$text)
+s <- get_nrc_sentiment(tweets)
+#FOR MAC USER IF ERROR!
+s <- get_nrc_sentiment(tweets, cl = NULL, language = "english", lowercase = F) #takes time
+
+# Plot sentiment scores
+barplot(colSums(s),
+        las = 2,
+        col = rainbow(10),
+        ylab = 'Count',
+        main = 'Sentiment Scores of Tweets')
+
+#########################################
+# Advanced Sentiment Word Visualization #
+#########################################
+
+library(reshape2)
+# FOR MAC USER IF ERROR!
+install.packages("tidytext")
+library(tidytext) #for function ‘get_sentiments’
+
+w %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("red", "green"),
+                   max.words = 100)
