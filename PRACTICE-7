@@ -434,6 +434,7 @@ p
 
 # Define ROI
 roi_sf <- gadm(country = "PSE", level = 1, path = tempdir())
+# If you have this message: “The geodata server appears to be down. Hopefully it will be back soon.” Just wait a couple of minutes or hours.
 
 # Fetch Nighttime Lights Data for 2014 and 2024
 r2014 <- bm_raster(roi_sf = roi_sf, product_id = "VNP46A3", date = "2014-06-01", bearer = bearer)
