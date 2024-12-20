@@ -114,3 +114,224 @@ ggplot(summary_data, aes(x = x, y = mean_y, group = group, color = group)) +
   theme_minimal(base_size = 15) +
   theme(legend.position = "top")
 
+
+# Figure 5.5 1D representations with variations of data and uncertain data points.
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+
+# Simulate data with uncertainty
+set.seed(42)
+n <- 100
+data <- data.frame(
+  value = rnorm(n, mean = 50, sd = 10),
+  group = sample(letters[1:3], n, replace = TRUE)
+)
+
+# Add uncertainty: simulate a range (upper and lower bounds)
+data <- data %>%
+  group_by(group) %>%
+  mutate(
+    lower_bound = value - rnorm(n(), mean = 0, sd = 2),
+    upper_bound = value + rnorm(n(), mean = 0, sd = 2)
+  )
+
+# 1. Box Plot with Error Bars (Uncertainty Visualized as Range)
+boxplot_error <- ggplot(data, aes(x = group, y = value)) +
+  geom_boxplot(aes(fill = group), alpha = 0.3) +
+  geom_errorbar(aes(ymin = lower_bound, ymax = upper_bound), width = 0.2, color = "black") +
+  labs(title = "Box Plot with Error Bars (Uncertainty)") +
+  theme_minimal(base_size = 15)
+
+# 2. Markers Encoding Uncertainty (Using Points and Error Ranges)
+markers_uncertainty <- ggplot(data, aes(x = group, y = value)) +
+  geom_point(aes(color = group), size = 3) +
+  geom_errorbar(aes(ymin = lower_bound, ymax = upper_bound), width = 0.2, color = "red") +
+  labs(title = "Markers Encoding Uncertainty") +
+  theme_minimal(base_size = 15)
+
+# 3. Display the plots
+library(gridExtra)
+grid.arrange(boxplot_error, markers_uncertainty, ncol = 2)
+
+# Figure 5.6 Rangefinder boxplot, 2D boxplot, bagplot, and quel and rel plot.
+# Load required libraries
+library(MASS)  # For generating bivariate normal data
+library(ggplot2)  # For advanced plotting
+
+# Generate sample bivariate data
+set.seed(123)
+data <- mvrnorm(n = 200, mu = c(0, 0), Sigma = matrix(c(1, 0.8, 0.8, 1), 2, 2))
+
+# Define a function to create Rangefinder Boxplot
+rangefinder_boxplot <- function(data) {
+  # Find median and IQR
+  median_x <- median(data[,1])
+  median_y <- median(data[,2])
+  q1_x <- quantile(data[,1], 0.25)
+  q3_x <- quantile(data[,1], 0.75)
+  q1_y <- quantile(data[,2], 0.25)
+  q3_y <- quantile(data[,2], 0.75)
+  
+  # Plot the data points
+  plot(data, pch = 20, col = rgb(0, 0, 0, 0.3), main = "Rangefinder Boxplot", xlab = "X", ylab = "Y")
+  
+  # Add the cross lines (median and IQR ranges)
+  abline(h = median_y, col = "red", lwd = 2)
+  abline(v = median_x, col = "red", lwd = 2)
+  
+  # Draw interquartile range lines
+  lines(c(q1_x, q3_x), rep(median_y, 2), col = "blue", lwd = 2)
+  lines(c(q1_x, q3_x), rep(median_y + (q3_y - q1_y), 2), col = "blue", lwd = 2)
+  lines(c(q1_x, q3_x), rep(median_y - (q3_y - q1_y), 2), col = "blue", lwd = 2)
+}
+
+# Define a function to create 2D Boxplot
+two_d_boxplot <- function(data) {
+  # Find median and IQR
+  median_x <- median(data[,1])
+  median_y <- median(data[,2])
+  q1_x <- quantile(data[,1], 0.25)
+  q3_x <- quantile(data[,1], 0.75)
+  q1_y <- quantile(data[,2], 0.25)
+  q3_y <- quantile(data[,2], 0.75)
+  
+  # Plot the data points
+  plot(data, pch = 20, col = rgb(0, 0, 0, 0.3), main = "2D Boxplot", xlab = "X", ylab = "Y")
+  
+  # Add the median and quartiles
+  points(median_x, median_y, col = "red", pch = 19)
+  rect(min(data[,1]), q1_y, max(data[,1]), q3_y, col = rgb(0, 0, 1, 0.2), border = "blue")
+  rect(min(data[,1]), q1_y, max(data[,1]), q3_y, col = rgb(1, 0, 0, 0.2), border = "red")
+}
+
+# Define a function to create Bagplot
+bagplot <- function(data) {
+  # Plot the data points
+  plot(data, pch = 20, col = rgb(0, 0, 0, 0.3), main = "Bagplot", xlab = "X", ylab = "Y")
+  
+  # Calculate the convex hull
+  hull <- chull(data)
+  polygon(data[hull,], col = "grey", border = "black")
+  
+  # Add the fence (loop) and bag
+  bag_x <- c(quantile(data[,1], 0.25), quantile(data[,1], 0.75))
+  bag_y <- c(quantile(data[,2], 0.25), quantile(data[,2], 0.75))
+  rect(min(data[,1]), min(data[,2]), max(data[,1]), max(data[,2]), col = "darkgrey", border = "black")
+}
+
+# Define a function to create Quel and Rel Plot
+quel_rel_plot <- function(data) {
+  # Find the quantiles and medians
+  median_x <- median(data[,1])
+  median_y <- median(data[,2])
+  q1_x <- quantile(data[,1], 0.25)
+  q3_x <- quantile(data[,1], 0.75)
+  q1_y <- quantile(data[,2], 0.25)
+  q3_y <- quantile(data[,2], 0.75)
+  
+  # Plot the data points
+  plot(data, pch = 20, col = rgb(0, 0, 0, 0.3), main = "Quel and Rel Plot", xlab = "X", ylab = "Y")
+  
+  # Add the center point and interior hinge (50% of the data)
+  points(median_x, median_y, col = "red", pch = 19)
+  rect(min(data[,1]), q1_y, max(data[,1]), q3_y, col = rgb(0, 0, 1, 0.2), border = "blue")
+}
+
+# Create all four bivariate boxplots
+par(mfrow = c(2, 2))  # Arrange plots in a 2x2 grid
+
+rangefinder_boxplot(data)
+two_d_boxplot(data)
+bagplot(data)
+quel_rel_plot(data)
+
+# Figure 5.7 3D and 4D representations.
+# Load necessary libraries
+library(rgl)  # For 3D plotting
+library(ggplot2)  # For additional 2D/3D visualization
+library(viridis)  # For color scales
+library(plotly)  # For interactive plotting
+
+# --- 1. Spherical Glyphs Scaled to Radiosity Differences ---
+# Generate some random spherical glyphs based on radiosity differences
+n <- 100  # number of glyphs
+set.seed(123)
+
+# Random positions
+x <- rnorm(n)
+y <- rnorm(n)
+z <- rnorm(n)
+
+# Radiosity difference (scaled to range [0, 1])
+radiosity <- runif(n)
+
+# Plot spherical glyphs
+open3d()
+spheres3d(x, y, z, radius=0.1 + radiosity * 0.5, col=viridis(100)[floor(radiosity*100)], alpha=0.7)
+
+# --- 2. Line Glyphs Show Tile Particle Positions along Streamlines ---
+# Streamline simulation (using random walk for simplicity)
+streamline_x <- cumsum(rnorm(100))
+streamline_y <- cumsum(rnorm(100))
+streamline_z <- cumsum(rnorm(100))
+
+# Plot line glyphs along the streamlines
+open3d()
+plot3d(streamline_x, streamline_y, streamline_z, type='l', col='blue', lwd=2, main="Streamlines of Tile Particle Positions")
+
+# --- 3. Uncertainty Vector Glyphs over Monterey Bay (Example Data) ---
+# Example of vector field over a region, simulating uncertainty vectors
+lon <- seq(-123.5, -121.5, length.out = 10)
+lat <- seq(36.5, 37.5, length.out = 10)
+grid <- expand.grid(lon=lon, lat=lat)
+
+# Simulate uncertainty vectors (random directions and magnitudes)
+vec_x <- runif(nrow(grid), -1, 1)
+vec_y <- runif(nrow(grid), -1, 1)
+vec_z <- runif(nrow(grid), -0.5, 0.5)
+
+# Plot vector glyphs
+open3d()
+quiver3d(grid$lon, grid$lat, rep(0, nrow(grid)), vec_x, vec_y, vec_z, scale=0.5, color="red", main="Uncertainty Vectors over Monterey Bay")
+
+# --- 4. Line Glyphs Showing Difference Between Interpolated Surfaces (Bilinear vs Multiquadric) ---
+# Simulate a grid and create two surfaces: bilinear and multiquadric interpolation
+x <- seq(-5, 5, length.out = 50)
+y <- seq(-5, 5, length.out = 50)
+grid <- expand.grid(x=x, y=y)
+
+# Bilinear interpolation surface (simple)
+bilinear_surface <- matrix(outer(x, y, function(x, y) sin(x) * cos(y)), nrow=50)
+
+# Multiquadric surface (more complex)
+multiquadric_surface <- matrix(outer(x, y, function(x, y) exp(-(x^2 + y^2))), nrow=50)
+
+# Compute difference surface
+diff_surface <- bilinear_surface - multiquadric_surface
+
+# Plot line glyphs showing the difference
+open3d()
+lines3d(grid$x, grid$y, diff_surface, col='green', lwd=2, main="Difference Between Bilinear and Multiquadric Surfaces")
+
+# --- 5. Uncertainty Isosurfaces ---
+# Generate random 3D data representing uncertainty levels
+uncertainty_data <- array(runif(1000), dim=c(10, 10, 10))
+
+# Plot uncertainty isosurface at a certain threshold
+open3d()
+isosurface3d(uncertainty_data, level=0.5, color='blue', alpha=0.5, main="Uncertainty Isosurface")
+
+# --- 6. Interactive 4D Visualization of Data (Time as 4th Dimension) ---
+# Generate some 4D data (3D coordinates over time)
+time <- seq(1, 100, by=1)
+x <- sin(time) + rnorm(100, 0, 0.1)
+y <- cos(time) + rnorm(100, 0, 0.1)
+z <- time + rnorm(100, 0, 0.1)
+
+# Create interactive 3D plot (with time as color)
+plot_ly(x=x, y=y, z=z, type='scatter3d', mode='markers', marker=list(size=5, color=time, colorscale='Viridis', opacity=0.8)) %>%
+  layout(title="4D Data Visualization (Time as 4th Dimension)", scene=list(xaxis=list(title="X"), yaxis=list(title="Y"), zaxis=list(title="Z")))
+
+
+
