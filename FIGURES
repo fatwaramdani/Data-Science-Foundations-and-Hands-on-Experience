@@ -126,3 +126,33 @@ ggplot(scale_data, aes(x = x, y = 1)) +
     panel.grid = element_blank()
   ) +
   ggtitle("Please rate your satisfaction with environmental sustainability efforts at your region")
+
+Figure 2.8 The "Five Vs" of big data and its relationship.
+
+# Load necessary libraries
+library(ggplot2)
+library(grid)
+
+# Set up the positions for the circles with large sizes to ensure overlap
+circle_data <- data.frame(
+  V = c("Volume", "Variety", "Velocity", "Veracity", "Value"),
+  x = c(0.25, 0.75, 0.25, 0.75, 0.5),
+  y = c(0.75, 0.75, 0.25, 0.25, 0.5),
+  r = rep(0.6, 5),  # Significantly increase the radius of the circles to cause overlap
+  color = c("lightgrey", "lightgrey", "lightgrey", "lightgrey", "darkgrey")  # Different colors for each circle
+)
+
+# Create the plot with large circles that will overlap and different colors
+ggplot(circle_data) +
+  # Add circles with different colors to cause overlap
+  geom_point(aes(x = x, y = y), size = 100, shape = 21, color = "black", fill = circle_data$color) +
+  # Add text labels for the circles with a larger font size
+  geom_text(aes(x = x, y = y, label = V), size = 11, fontface = "bold", color = "black") +
+  # Customize plot appearance
+  theme_void() +
+  theme(
+    panel.grid = element_blank()
+  ) +
+  coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +
+  ggtitle("") +
+  theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
