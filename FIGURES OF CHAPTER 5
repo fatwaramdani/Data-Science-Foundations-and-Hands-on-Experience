@@ -405,3 +405,84 @@ summary_stats <- data.frame(
 
 # Print summary statistics
 print(summary_stats)
+
+#Figure 5.11 Representations involving hue, value and transparency, in addition with resolution, fuzziness, and blurring. 
+library(ggplot2)
+library(scales)
+library(ggfx) # For blurring effects
+
+# Example dataset
+set.seed(42)
+data <- data.frame(
+  x = rnorm(100),
+  y = rnorm(100),
+  uncertainty = runif(100, 0.1, 1) # Uncertainty levels
+)
+
+# Create the plot
+plot <- ggplot(data, aes(x = x, y = y)) +
+  # Points with hue and transparency representing uncertainty
+  geom_point(aes(color = uncertainty, alpha = uncertainty), size = 5) +
+  
+  # Apply blurring to represent fuzziness
+  with_blur(
+    geom_point(aes(color = uncertainty, alpha = uncertainty), size = 5), 
+    sigma = 5 # Degree of blur
+  ) +
+  
+  # Adjust resolution (symbol size)
+  geom_point(aes(color = uncertainty, size = uncertainty), alpha = 0.7) +
+  
+  # Scale color for hue (blue to red gradient)
+  scale_color_gradient(low = "blue", high = "red", name = "Uncertainty") +
+  
+  # Set transparency range
+  scale_alpha(range = c(0.3, 1), name = "Transparency") +
+  
+  # Set size scale for resolution
+  scale_size_continuous(range = c(3, 10), name = "Resolution") +
+  
+  # Add labels and theme
+  labs(
+    title = "",
+    x = "X-axis",
+    y = "Y-axis"
+  ) +
+  theme_minimal(base_size = 20)
+
+# Print the plot
+print(plot)
+
+
+
+#Figure 5.12  Variable and uncertainty is shown side-by-side.
+# Load necessary libraries
+library(ggplot2)
+library(gridExtra) # To arrange plots side-by-side
+
+# Example data frame (replace this with your actual data)
+# Data should have columns: "x", "y", "variable", "uncertainty"
+data <- data.frame(
+  x = rep(1:10, each = 10),
+  y = rep(1:10, times = 10),
+  variable = runif(100, 0, 1), # Replace with your variable data
+  uncertainty = runif(100, 0, 0.5) # Replace with your uncertainty data
+)
+
+# Plot for the variable
+variable_plot <- ggplot(data, aes(x = x, y = y, fill = variable)) +
+  geom_tile() +
+  scale_fill_viridis_c(name = "Variable") +
+  theme_minimal(base_size = 20) +
+  labs(title = "Variable Representation", x = "X Coordinate", y = "Y Coordinate")
+
+# Plot for the uncertainty
+uncertainty_plot <- ggplot(data, aes(x = x, y = y, fill = uncertainty)) +
+  geom_tile() +
+  scale_fill_viridis_c(name = "Uncertainty", option = "plasma") +
+  theme_minimal(base_size = 20) +
+  labs(title = "Uncertainty Representation", x = "X Coordinate", y = "Y Coordinate")
+
+# Arrange the two plots side-by-side
+grid.arrange(variable_plot, uncertainty_plot, ncol = 2)
+
