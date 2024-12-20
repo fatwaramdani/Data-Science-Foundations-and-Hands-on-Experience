@@ -1,5 +1,5 @@
 #############
-# CHAPTER 4 #
+# CHAPTER 5 #
 #############
 
 # Figure 5.2 Illustrate a boxplot with the distribution of values in each group, with mean values represented as blue dots and error bars to represent the confidence interval.
@@ -346,4 +346,62 @@ plot_ly(x=x, y=y, z=z, type='scatter3d', mode='markers', marker=list(size=5, col
   layout(title="4D Data Visualization (Time as 4th Dimension)", scene=list(xaxis=list(title="X"), yaxis=list(title="Y"), zaxis=list(title="Z")))
 
 
+# Figure 5.8 Forecast with uncertainty intervals.
 
+library(ggplot2)
+library(dplyr)
+library(plotly)
+library(shinydashboard)
+library(forecast)
+
+# Sample data: a simple time series with some uncertainty
+set.seed(123)
+n <- 100
+time_series <- ts(rnorm(n, mean = 50, sd = 10), frequency = 12)
+
+# -------------------------------------------
+# 1. Tendency and Forecast (e.g., regression & fan charts)
+# Forecast with uncertainty intervals
+fit <- auto.arima(time_series)
+forecast_data <- forecast(fit, h = 12)
+
+# Plotting the forecast with uncertainty bands (fan chart)
+ggplot() +
+  geom_line(aes(x = time(time_series), y = as.numeric(time_series)), color = "blue", size = 1) +
+  geom_ribbon(aes(x = time(forecast_data$mean), ymin = forecast_data$lower[,2], ymax = forecast_data$upper[,2]), 
+              fill = "lightblue", alpha = 0.5) +
+  geom_line(aes(x = time(forecast_data$mean), y = as.numeric(forecast_data$mean)), color = "red", size = 1) +
+  labs(title = "", x = "Time", y = "Value")+
+  theme_minimal(base_size = 20)
+
+#Figure 5.9 Spreadsheet of Uncertainty (showing numbers) of Figure 5.8.
+# -------------------------------------------
+# 2. Spreadsheet of Uncertainty (showing numbers)
+# Create a table of the forecast uncertainty
+forecast_table <- data.frame(
+  Time = c(time(time_series), time(forecast_data$mean)),
+  Observed = c(as.numeric(time_series), rep(NA, 12)),
+  Forecast = c(rep(NA, n), as.numeric(forecast_data$mean)),
+  Lower = c(rep(NA, n), forecast_data$lower[,2]),
+  Upper = c(rep(NA, n), forecast_data$upper[,2])
+)
+
+# Print the table
+print(forecast_table)
+# Print only the last ten rows of the forecast table
+print(tail(forecast_table, 10))
+
+#Figure 5. 10 Basic summary statistics of the uncertainty (forecast intervals) of Figure 5.8.
+# -------------------------------------------
+# 3. Statistic Summary of Uncertainty
+# Basic summary statistics of the uncertainty (forecast intervals)
+summary_stats <- data.frame(
+  Statistic = c("Mean", "Standard Deviation", "95% CI Lower", "95% CI Upper"),
+  Value = c(mean(forecast_data$mean), 
+            sd(forecast_data$mean), 
+            mean(forecast_data$lower[,2]), 
+            mean(forecast_data$upper[,2]))
+)
+
+# Print summary statistics
+print(summary_stats)
