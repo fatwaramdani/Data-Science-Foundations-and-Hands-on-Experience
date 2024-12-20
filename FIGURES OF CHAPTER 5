@@ -314,6 +314,18 @@ diff_surface <- bilinear_surface - multiquadric_surface
 open3d()
 lines3d(grid$x, grid$y, diff_surface, col='green', lwd=2, main="Difference Between Bilinear and Multiquadric Surfaces")
 
+# Example 4: Line Glyphs showing the difference between bilinear and multiquadric interpolated surfaces
+# Generate a surface for interpolation comparison
+x <- seq(-3, 3, length.out = 100)
+y <- seq(-3, 3, length.out = 100)
+z_bilinear <- outer(x, y, function(x, y) sin(x) * cos(y))  # Bilinear surface
+z_multiquadric <- outer(x, y, function(x, y) exp(-0.1 * (x^2 + y^2)))  # Multiquadric surface
+
+# Plot the two surfaces
+par(mfrow = c(1, 2))
+persp(x, y, z_bilinear, main = "Bilinear Interpolation", col = "lightblue")
+persp(x, y, z_multiquadric, main = "Multiquadric Interpolation", col = "lightgreen")
+
 # --- 5. Uncertainty Isosurfaces ---
 # Generate random 3D data representing uncertainty levels
 uncertainty_data <- array(runif(1000), dim=c(10, 10, 10))
