@@ -37,7 +37,7 @@ ggplot(data = data.frame(Value = data), aes(x = Value)) +
        x = "Value", 
        y = "Frequency", 
        color = "Statistic") +
-  theme_minimal()
+  theme_minimal(base_size = 20)
 
 # Figure 4.2
 
@@ -80,7 +80,7 @@ ggplot(summary_stats_long, aes(x = Variable, y = Value, fill = Metric)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(title = "",
        x = "Variable", y = "Value") +
-  theme_minimal()
+  theme_minimal(base_size = 20)
 
 # Figure 4.2 Skewness and kurtosis.
 
@@ -126,8 +126,7 @@ ggplot(distribution_data, aes(x = value, fill = type)) +
     y = "Density",
     fill = "Distribution Type"
   ) +
-  theme_minimal()
-
+  theme_minimal(base_size = 15)
 
 # Load necessary library
 library(ggplot2)
@@ -144,12 +143,12 @@ ggplot(data, aes(x = x)) +
   geom_histogram(binwidth = 5, fill = "skyblue", color = "black") +
   labs(title = "Histogram of X", x = "Values of X", y = "Frequency", size = 5) +
   geom_text(aes(x = 65, y = 15, label = "Bins represent frequency"), color = "red", size = 5) +
-  theme_minimal()
+  theme_minimal(base_size = 20)
 
 # Figure 4.2 Boxplot
 ggplot(data, aes(x = "", y = x)) +
   geom_boxplot(fill = "pink", color = "black", width = 0.2) + # Reduced width for a narrower boxplot
-  labs(title = "Boxplot of X", y = "Values of X") + 
+  labs(title = "", y = "Values of X") + 
   stat_summary(geom = "text", aes(label = "Maximum"), fun = max, vjust = -0.5, color = "blue", size = 5) +
   stat_summary(geom = "text", aes(label = "Upper whisker"), fun = function(y) boxplot.stats(y)$stats[4], vjust = -0.5, color = "blue", size = 5) +
   stat_summary(geom = "text", aes(label = "Median (Q2)"), fun = median, vjust = -0.5, color = "red", size = 5) +
@@ -159,7 +158,7 @@ ggplot(data, aes(x = "", y = x)) +
              aes(x = "", y = x), color = "red", size = 3) + # Highlighting outliers
   geom_text(data = data %>% filter(x > boxplot.stats(x)$stats[5] | x < boxplot.stats(x)$stats[1]),
             aes(x = "", y = x, label = "Outlier"), color = "red", size = 5, hjust = -0.2) +
-  theme_minimal() +
+  theme_minimal(base_size = 15) +
   theme(plot.title = element_text(size = 14), # Adjusted title size for better readability
         axis.title.y = element_text(size = 12), 
         axis.text = element_text(size = 10)) 
@@ -168,6 +167,6 @@ ggplot(data, aes(x = "", y = x)) +
 # Figure 4.3 Scatterplot.
 ggplot(data, aes(x = x, y = y)) +
   geom_point(color = "purple") +
-  labs(title = "Scatterplot of X and Y", x = "Values of X", y = "Values of Y", size = 5) +
+  labs(title = "", x = "Values of X", y = "Values of Y", size = 5) +
   geom_text(aes(x = 65, y = 45, label = "Each point is an observation"), color = "red", size = 5) +
-  theme_minimal()
+  theme_minimal(base_size = 20)
