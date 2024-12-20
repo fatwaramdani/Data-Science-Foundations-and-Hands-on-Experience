@@ -1,1 +1,116 @@
+#############
+# CHAPTER 4 #
+#############
+
+# Figure 5.2 Illustrate a boxplot with the distribution of values in each group, with mean values represented as blue dots and error bars to represent the confidence interval.
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(ggsignif)
+
+# Example data: Generate sample data with means, errors, and confidence intervals
+set.seed(123)  # For reproducibility
+data <- data.frame(
+  Group = rep(c("A", "B"), each = 100),
+  Value = c(rnorm(100, mean = 5, sd = 2), rnorm(100, mean = 7, sd = 2))
+)
+
+# Calculate summary statistics (mean, CI, and SD)
+summary_stats <- data %>%
+  group_by(Group) %>%
+  summarise(
+    mean_value = mean(Value),
+    sd_value = sd(Value),
+    se_value = sd_value / sqrt(n()),
+    ci_lower = mean_value - qt(0.975, df = n() - 1) * se_value,  # 95% CI
+    ci_upper = mean_value + qt(0.975, df = n() - 1) * se_value
+  )
+
+# Plot with ggplot2 including error bars and confidence intervals
+ggplot() +
+  geom_boxplot(data = data, aes(x = Group, y = Value), alpha = 0.5, outlier.colour = "red", outlier.size = 2) +  # Boxplot to show distribution
+  geom_point(data = summary_stats, aes(x = Group, y = mean_value), color = "blue", size = 3) +  # Mean values
+  geom_errorbar(data = summary_stats, aes(x = Group, ymin = ci_lower, ymax = ci_upper), width = 0.2) +  # Confidence interval
+  geom_signif(comparisons = list(c("A", "B")), map_signif_level = TRUE) +  # Significance annotation
+  labs(
+    title = "",
+    x = "Group",
+    y = "Value"
+  ) +
+  theme_minimal(base_size = 20)
+
+#Figure 5.3 Illustrate the visual encoding channels.
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Simulate some data with uncertainty
+set.seed(123)
+data <- data.frame(
+  x = rnorm(100),
+  y = rnorm(100),
+  uncertainty = runif(100, 0, 1)  # Uncertainty ranges from 0 (high confidence) to 1 (low confidence)
+)
+
+# Create a new variable for size (inversely proportional to uncertainty)
+data$size <- 5 * (1 - data$uncertainty)
+
+# Create a new variable for transparency (alpha) (higher uncertainty = more transparency)
+data$alpha <- 1 - data$uncertainty
+
+# Plotting the data with adjusted color, size, and transparency
+ggplot(data, aes(x = x, y = y)) +
+  geom_point(aes(color = uncertainty, size = size, alpha = alpha)) +
+  scale_color_gradient(low = "blue", high = "red", name = "Uncertainty") +  # Color fades with uncertainty
+  scale_size_continuous(range = c(2, 10), name = "Symbol Size") +  # Size increases with lower uncertainty
+  scale_alpha_continuous(range = c(0.1, 1), name = "Transparency") +  # Transparency increases with uncertainty
+  theme_minimal(base_size = 15) +
+  labs(title = "Visualization of Uncertainty Using Visual Encoding Channels",
+       x = "X-axis",
+       y = "Y-axis") +
+  theme(legend.position = "bottom")
+
+
+# Figure 5.4 Illustrate the hybrid approaches, combining graphical annotations and visual encodings, providing a clear representation of uncertainty and confidence intervals in the data.
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+# Example dataset: Simulated data with uncertainty (e.g., measurements with confidence intervals)
+set.seed(42)
+data <- tibble(
+  x = rep(seq(1, 10, length.out = 100), 3),
+  y = c(rnorm(100, mean = 5, sd = 1), rnorm(100, mean = 6, sd = 1.2), rnorm(100, mean = 7, sd = 0.8)),
+  group = rep(c("Group 1", "Group 2", "Group 3"), each = 100)
+)
+
+# Calculate summary statistics (mean and 95% confidence intervals)
+summary_data <- data %>%
+  group_by(x, group) %>%
+  summarise(
+    mean_y = mean(y),
+    lower_ci = mean_y - qt(0.975, df = n() - 1) * sd(y) / sqrt(n()),
+    upper_ci = mean_y + qt(0.975, df = n() - 1) * sd(y) / sqrt(n())
+  )
+
+# Plotting the Hybrid Approach with contour box plots and interval plots
+ggplot(summary_data, aes(x = x, y = mean_y, group = group, color = group)) +
+  # Interval plot (95% confidence intervals)
+  geom_ribbon(aes(ymin = lower_ci, ymax = upper_ci), alpha = 0.3) +
+  # Contour box plot for uncertainty representation
+  geom_boxplot(data = data, aes(x = x, y = y, fill = group), 
+               width = 0.2, outlier.shape = NA, alpha = 0.2) +
+  # Line for mean y-values
+  geom_line(aes(x = x, y = mean_y), size = 1) +
+  # Titles and labels
+  labs(
+    title = "",
+    x = "X-axis (Independent Variable)",
+    y = "Y-axis (Dependent Variable)",
+    fill = "Group",
+    color = "Group"
+  ) +
+  theme_minimal(base_size = 15) +
+  theme(legend.position = "top")
 
