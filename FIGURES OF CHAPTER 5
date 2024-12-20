@@ -486,3 +486,49 @@ uncertainty_plot <- ggplot(data, aes(x = x, y = y, fill = uncertainty)) +
 # Arrange the two plots side-by-side
 grid.arrange(variable_plot, uncertainty_plot, ncol = 2)
 
+
+#Figure 5.5 Hypothetical Outcome Plots (HOPs). 
+library(ggplot2)
+library(gganimate)
+library(dplyr)
+library(tidyr)
+
+# Set seed for reproducibility
+set.seed(42)
+
+# Parameters for the simulation
+n_simulations <- 100  # Number of hypothetical outcomes
+data_per_sim <- 50    # Number of data points per simulation
+group_means <- c(5, 7)  # Means for two groups
+group_sds <- c(2, 3)    # Standard deviations for two groups
+
+group_labels <- c("Group A", "Group B")
+
+# Simulate data for each hypothetical outcome
+simulated_data <- expand.grid(Simulation = 1:n_simulations, 
+                              Group = group_labels) %>%
+  rowwise() %>%
+  mutate(Data = list(rnorm(data_per_sim, 
+                           mean = if_else(Group == "Group A", group_means[1], group_means[2]), 
+                           sd = if_else(Group == "Group A", group_sds[1], group_sds[2])))) %>%
+  unnest(Data)
+
+# Create a base plot
+plot <- ggplot(simulated_data, aes(x = Group, y = Data, color = Group)) +
+  geom_jitter(width = 0.2, alpha = 0.6, size = 2) +
+  stat_summary(fun = mean, geom = "point", size = 4, shape = 23, fill = "white") +
+  labs(title = "Hypothetical Outcome Plot (HOP)",
+       subtitle = "Simulation {closest_state} of {n_simulations}",
+       x = "Group",
+       y = "Values",
+       color = "Group") +
+  theme_minimal(base_size = 15) +
+  theme(legend.position = "top") +
+  transition_states(Simulation, transition_length = 2, state_length = 1, wrap = TRUE) +
+  ease_aes('sine-in-out')
+
+# Animate the plot
+animated_plot <- animate(plot, nframes = 200, fps = 20, width = 800, height = 600)
+
+# Save the animation
+anim_save("HOP_animation.gif", animation = animated_plot)
