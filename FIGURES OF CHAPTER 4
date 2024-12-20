@@ -207,3 +207,121 @@ ggplot(data, aes(x = x, y = y)) +
   labs(title = "",
        x = "X-axis",
        y = "Y-axis")
+
+# Figure 4.7 Illustrate the normal distribution, binomial distribution, and poisson distribution.
+
+# Load required library
+library(ggplot2)
+
+# Plot Normal Distribution
+plot_normal <- function() {
+  x <- seq(-4, 4, length = 1000)
+  y <- dnorm(x, mean = 0, sd = 1)  # Standard Normal Distribution
+  
+  ggplot(data.frame(x, y), aes(x, y)) +
+    geom_line(color = "blue", size = 1) +
+    ggtitle("Normal Distribution (mean = 0, sd = 1)") +
+    xlab("x") + ylab("Density") +
+    theme_minimal()
+}
+
+# Plot Binomial Distribution
+plot_binomial <- function() {
+  x <- 0:20  # Number of trials
+  y <- dbinom(x, size = 20, prob = 0.5)  # Binomial Distribution (n = 20, p = 0.5)
+  
+  ggplot(data.frame(x, y), aes(x, y)) +
+    geom_bar(stat = "identity", fill = "orange", color = "black") +
+    ggtitle("Binomial Distribution (n = 20, p = 0.5)") +
+    xlab("x") + ylab("Probability") +
+    theme_minimal()
+}
+
+# Plot Poisson Distribution
+plot_poisson <- function() {
+  x <- 0:20  # Range of events
+  y <- dpois(x, lambda = 5)  # Poisson Distribution (lambda = 5)
+  
+  ggplot(data.frame(x, y), aes(x, y)) +
+    geom_bar(stat = "identity", fill = "green", color = "black") +
+    ggtitle("Poisson Distribution (lambda = 5)") +
+    xlab("x") + ylab("Probability") +
+    theme_minimal()
+}
+
+# Plot all distributions
+library(gridExtra)
+grid.arrange(plot_normal(), plot_binomial(), plot_poisson(), nrow = 1)
+
+
+#Figure 4.9 Illustration of population and sample.
+
+# Load required libraries
+library(ggplot2)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Generate population data (e.g., 500 data points)
+population <- data.frame(
+  x = rnorm(500, mean = 50, sd = 10), # Random x-values (e.g., ages, incomes)
+  y = rnorm(500, mean = 30, sd = 5)   # Random y-values (e.g., scores, heights)
+)
+
+# Randomly select a sample from the population (e.g., 50 data points)
+sample_size <- 50
+sample_indices <- sample(1:nrow(population), size = sample_size)
+sample <- population[sample_indices, ]
+
+# Create the plot
+ggplot() +
+  # Plot the entire population in gray
+  geom_point(data = population, aes(x = x, y = y), color = "gray", alpha = 0.5, size = 2) +
+  # Highlight the sample in blue
+  geom_point(data = sample, aes(x = x, y = y), color = "blue", size = 3) +
+  # Add titles and labels
+  labs(
+    title = "",
+    subtitle = paste("Population Size:", nrow(population), "\u2022 Sample Size:", sample_size),
+    x = "Variable X",
+    y = "Variable Y"
+  ) +
+  theme_minimal(base_size = 20)
+
+
+# Figure 4.10 illustration of confidence interval and errors. 
+# Load necessary library
+library(ggplot2)
+
+# Simulate example data
+set.seed(123)
+data <- data.frame(
+  group = rep(c("A", "B", "C"), each = 30),
+  value = c(
+    rnorm(30, mean = 5, sd = 1),
+    rnorm(30, mean = 7, sd = 1.2),
+    rnorm(30, mean = 6, sd = 0.8)
+  )
+)
+
+# Calculate summary statistics: mean, standard error, confidence intervals
+summary_stats <- data %>%
+  group_by(group) %>%
+  summarise(
+    mean = mean(value),
+    se = sd(value) / sqrt(n()),
+    lower_ci = mean - qt(0.975, df = n() - 1) * se,  # 95% CI lower bound
+    upper_ci = mean + qt(0.975, df = n() - 1) * se   # 95% CI upper bound
+  )
+
+# Create a ggplot object
+ggplot(summary_stats, aes(x = group, y = mean)) +
+  geom_point(size = 3, color = "blue") +  # Mean points
+  geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), 
+                width = 0.2, color = "red") +  # CI error bars
+  labs(
+    title = "Mean with 95% Confidence Intervals",
+    x = "Group",
+    y = "Mean Value"
+  ) +
+  theme_minimal(base_size = 20)
