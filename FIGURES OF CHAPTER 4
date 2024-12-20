@@ -170,3 +170,40 @@ ggplot(data, aes(x = x, y = y)) +
   labs(title = "", x = "Values of X", y = "Values of Y", size = 5) +
   geom_text(aes(x = 65, y = 45, label = "Each point is an observation"), color = "red", size = 5) +
   theme_minimal(base_size = 20)
+
+
+# Figure 4.3 Illustration of “Negative correlation", "No correlation", and "Positive correlation”.
+
+# Load necessary library
+library(ggplot2)
+
+# Set random seed for reproducibility
+set.seed(123)
+
+# Generate data for positive correlation
+x_pos <- seq(1, 100, by=1)
+y_pos <- x_pos + rnorm(100, mean=0, sd=10)
+
+# Generate data for negative correlation
+x_neg <- seq(1, 100, by=1)
+y_neg <- 100 - x_neg + rnorm(100, mean=0, sd=10)
+
+# Generate data for no correlation
+x_none <- seq(1, 100, by=1)
+y_none <- rnorm(100, mean=50, sd=15)
+
+# Combine data into a data frame
+data <- data.frame(
+  x = c(x_pos, x_neg, x_none),
+  y = c(y_pos, y_neg, y_none),
+  Correlation = rep(c("Positive correlation", "Negative correlation", "No correlation"), each=100)
+)
+
+# Plot the scatterplots
+ggplot(data, aes(x = x, y = y)) +
+  geom_point(color = "blue", alpha = 0.7) +
+  facet_wrap(~ Correlation, scales = "free") +
+  theme_minimal(base_size = 20) +
+  labs(title = "",
+       x = "X-axis",
+       y = "Y-axis")
