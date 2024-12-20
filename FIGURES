@@ -1,2 +1,128 @@
-CHAPTER 2
+#############
+# CHAPTER 2 #
+#############
 
+#Figure 2.4 Illustration of Likert Scale application.
+
+# Load necessary libraries
+library(ggplot2)
+
+# Define Likert scale labels
+likert_labels <- c("Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree")
+
+# Create a data frame for plotting
+likert_data <- data.frame(
+  Rating = factor(1:5, labels = likert_labels),
+  Position = 1:5
+)
+
+# Plot the Likert scale with adjusted title positioning
+ggplot(likert_data, aes(x = Position, y = 1, label = Rating)) +
+  geom_tile(fill = "lightblue", color = "white", height = 0.5, width = 1) +
+  geom_text(size = 5, color = "black") +
+  scale_x_continuous(breaks = 1:5, labels = likert_labels, limits = c(0.5, 5.5)) +
+  scale_y_continuous(limits = c(0.5, 1.5)) +
+  theme_minimal() +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.x = element_text(size = 12),
+    panel.grid = element_blank(),  # Remove the extra comma here
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    plot.margin = unit(c(10, 10, 10, 10), "pt")  # Apply unit to margin adjustment
+  ) +
+  labs(title = "Please Rate: How satisfied are you with GIS in addressing local issues?")
+
+#Figure 2.5 Illustration of Semantic Differential Scale application.
+
+# Load the library
+library(ggplot2)
+
+# Define the semantic differential scale data
+scale_data <- data.frame(
+  adjective_pairs = c("Positive \u2194 Negative", "Clean \u2194 Dirty", "Sustainable \u2194 Unsustainable", "Beneficial \u2194 Harmful"),
+  positive_adjectives = c("Positive", "Clean", "Sustainable", "Beneficial"),
+  negative_adjectives = c("Negative", "Dirty", "Unsustainable", "Harmful"),
+  x_position = 1:4
+)
+
+# Create the plot
+plot_scale <- ggplot() +
+  geom_tile(data = scale_data, aes(x = x_position, y = 2), fill = "white", color = "black", width = 0.8, height = 0.8) +
+  geom_tile(data = scale_data, aes(x = x_position, y = 1), fill = "white", color = "black", width = 0.8, height = 0.8) +
+  geom_text(data = scale_data, aes(x = x_position, y = 2, label = positive_adjectives), color = "black", hjust = 0.5, vjust = 0.5) +
+  geom_text(data = scale_data, aes(x = x_position, y = 1, label = negative_adjectives), color = "black", hjust = 0.5, vjust = 0.5) +
+  scale_y_continuous(breaks = c(1, 2), labels = c("Negative", "Positive")) +
+  coord_flip() +
+  theme_minimal() +
+  labs(
+    title = "Please rate the effectiveness of AI technologies in environmental monitoring",
+    x = "Adjective Pair",
+    y = "Scale"
+  ) +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.title.x = element_text(size = 14),
+    axis.title.y = element_text(size = 14),
+    plot.title = element_text(size = 16),
+    axis.text.y = element_text(size = 12)
+  )
+
+# Display the plot
+print(plot_scale)
+
+#Figure 2.6 Illustration of Numerical Rating Scale application.
+
+# Load required package
+library(ggplot2)
+
+# Define data for the rating scale
+rating_scale <- data.frame(
+  Rating = 1:5,
+  Description = c("Not satisfied at all", "Slightly satisfied", "Neutral", 
+                  "Moderately satisfied", "Very satisfied")
+)
+
+# Plot the rating scale
+ggplot(rating_scale, aes(x = factor(Rating), y = 1)) +
+  geom_tile(fill = "white", color = "black") +  # Create empty boxes
+  geom_text(aes(label = Description), vjust = -1, hjust = 0.5, size = 5) +  # Add descriptions
+  geom_text(aes(label = Rating), color = "black", size = 6, vjust = 0.5) +  # Add numbers
+  scale_y_continuous(limits = c(0, 2), breaks = NULL) +  # Hide y-axis
+  theme_minimal() +
+  labs(title = "Rate your satisfaction for the Data Science class", x = "Rating", y = "") +
+  theme(
+    axis.title.x = element_text(size = 14),
+    axis.text.x = element_text(size = 12),
+    plot.title = element_text(size = 16, hjust = 0.5),
+    axis.ticks.y = element_blank()
+  )
+
+#Figure 2.7 Illustration of Visual Analog Scale application.
+
+# Load necessary libraries
+library(ggplot2)
+
+# Create a data frame for the scale points
+scale_data <- data.frame(
+  x = c(1, 2, 3, 4, 5),
+  labels = c("Extremely Unsatisfied", "Unsatisfied", "Neutral", "Satisfied", "Extremely Satisfied")
+)
+
+# Create a ggplot to visualize the scale
+ggplot(scale_data, aes(x = x, y = 1)) +
+  geom_segment(aes(x = 1, xend = 5, y = 1, yend = 1), size = 2, color = "grey") + # bar
+  geom_point(aes(x = x, y = 1), size = 4, color = "blue") +  # marker points
+  geom_text(aes(x = x, y = 1.1, label = labels), size = 4, hjust = 0.5, vjust = 0) + # labels
+  theme_minimal() +
+  scale_x_continuous(breaks = scale_data$x, labels = scale_data$labels, limits = c(0.5, 5.5)) +
+  scale_y_continuous(limits = c(0, 2)) +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid = element_blank()
+  ) +
+  ggtitle("Please rate your satisfaction with environmental sustainability efforts at your region")
