@@ -2,6 +2,133 @@
 # CHAPTER 4 #
 #############
 
+# Figure 4.1 Illustration of mean, median, and mode in a histogram.
+
+# Load necessary libraries
+library(ggplot2)
+
+# Generate a sample dataset
+set.seed(123)  # For reproducibility
+data <- rnorm(1000, mean = 50, sd = 10)  # Normal distribution with mean=50, sd=10
+
+# Calculate mean, median, and mode
+mean_value <- mean(data)
+median_value <- median(data)
+
+# Define a function to calculate mode
+calculate_mode <- function(x) {
+  uniq_values <- unique(x)
+  uniq_values[which.max(tabulate(match(x, uniq_values)))]
+}
+mode_value <- calculate_mode(round(data, 1))  # Round data to avoid excessive precision for mode
+
+# Create a data frame for vertical lines
+lines_data <- data.frame(
+  Statistic = c("Mean", "Median", "Mode"),
+  Value = c(mean_value, median_value, mode_value)
+)
+
+# Plot the histogram with mean, median, and mode
+ggplot(data = data.frame(Value = data), aes(x = Value)) +
+  geom_histogram(binwidth = 2, fill = "skyblue", color = "black", alpha = 0.7) +
+  geom_vline(data = lines_data, aes(xintercept = Value, color = Statistic), linetype = "dashed", size = 1) +
+  scale_color_manual(values = c("Mean" = "red", "Median" = "green", "Mode" = "blue")) +
+  labs(title = "", 
+       x = "Value", 
+       y = "Frequency", 
+       color = "Statistic") +
+  theme_minimal()
+
+# Figure 4.2
+
+# Load necessary library
+library(ggplot2)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Generate random data for three variables
+var1 <- rnorm(100, mean = 50, sd = 10)  # Variable 1: Normal distribution
+var2 <- runif(100, min = 30, max = 70)  # Variable 2: Uniform distribution
+var3 <- rpois(100, lambda = 40)         # Variable 3: Poisson distribution
+
+# Combine data into a data frame
+data <- data.frame(var1, var2, var3)
+
+# Display data in a table
+print("Randomly Generated Data:")
+print(head(data, 10))  # Show the first 10 rows
+
+# Calculate range, variance, and standard deviation for each variable
+summary_stats <- data.frame(
+  Variable = c("var1", "var2", "var3"),
+  Range = c(diff(range(var1)), diff(range(var2)), diff(range(var3))),
+  Variance = c(var(var1), var(var2), var(var3)),
+  StdDev = c(sd(var1), sd(var2), sd(var3))
+)
+
+print("Summary Statistics:")
+print(summary_stats)
+
+# Reshape data for plotting
+summary_stats_long <- reshape2::melt(summary_stats, id.vars = "Variable", 
+                                     variable.name = "Metric", 
+                                     value.name = "Value")
+
+# Plot range, variance, and standard deviation
+ggplot(summary_stats_long, aes(x = Variable, y = Value, fill = Metric)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "",
+       x = "Variable", y = "Value") +
+  theme_minimal()
+
+# Figure 4.2 Skewness and kurtosis.
+
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+
+# Generate data
+set.seed(123) # For reproducibility
+
+# Normal Distribution (Mesokurtic)
+normal_data <- data.frame(
+  value = rnorm(1000, mean = 0, sd = 1),
+  type = "Normal Distribution (Mesokurtic)"
+)
+
+# Positive Skewness (Leptokurtic)
+positive_skew_data <- data.frame(
+  value = rlnorm(1000, meanlog = 0, sdlog = 0.5),
+  type = "Positive Skewness (Leptokurtic)"
+)
+
+# Negative Skewness (Platykurtic)
+negative_skew_data <- data.frame(
+  value = -1 * rlnorm(1000, meanlog = 0, sdlog = 0.5),
+  type = "Negative Skewness (Platykurtic)"
+)
+
+# Combine all data
+distribution_data <- bind_rows(normal_data, positive_skew_data, negative_skew_data)
+
+# Plot the distributions
+ggplot(distribution_data, aes(x = value, fill = type)) +
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c(
+    "Normal Distribution (Mesokurtic)" = "blue",
+    "Positive Skewness (Leptokurtic)" = "green",
+    "Negative Skewness (Platykurtic)" = "red"
+  )) +
+  labs(
+    title = "",
+    x = "Value",
+    y = "Density",
+    fill = "Distribution Type"
+  ) +
+  theme_minimal()
+
+
 # Load necessary library
 library(ggplot2)
 
