@@ -1,0 +1,67 @@
+#############
+# CHAPTER 3 #
+#############
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(summarytools)
+library(DataExplorer)
+library(outliers)
+
+# Load sample dataset
+# Replace 'mtcars' with your dataset or read in your dataset using read.csv() or similar
+data <- mtcars
+
+# Figure 3.1 Summary statistics of the mtcars dataset.
+# Summary Statistics
+summary_stats <- summary(data)
+print("Summary Statistics:")
+print(summary_stats)
+
+# Visualize Summary Statistics
+data_long <- data %>%
+  rownames_to_column(var = "Car") %>%
+  pivot_longer(cols = -Car, names_to = "Variable", values_to = "Value")
+
+# Figure 3.2 Box plot of variables of the mtcars dataset.
+ggplot(data_long, aes(x = Variable, y = Value)) +
+  geom_boxplot(fill = "lightblue") +
+  theme_minimal(base_size = 20) +
+  labs(title = "", x = "Variable", y = "Value")
+
+# Data Profiling
+print("Data Profiling Report:")
+create_report(data)
+
+# Data Visualization
+# Pairwise Scatter Plots
+pairs(data, main = "Pairwise Scatter Plots")
+
+# Figure 3.3 The correlation heatmap of variables as one of the profiling output analysis of the mtcars dataset.
+# Correlation Heatmap
+cor_matrix <- round(cor(data), 2)
+ggplot(melt(cor_matrix), aes(Var1, Var2, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0, limit = c(-1, 1)) +
+  theme_minimal(base_size = 20) +
+  labs(title = "", x = "", y = "")
+
+# Outlier Detection
+print("Outlier Detection:")
+outlier_results <- apply(data, 2, function(x) {
+  outlier_test <- grubbs.test(x)
+  return(list(statistic = outlier_test$statistic, p.value = outlier_test$p.value))
+})
+print(outlier_results)
+
+# Highlight Outliers in Visualizations
+outliers_df <- data %>%
+  mutate(across(everything(), ~ifelse(. > mean(.) + 2 * sd(.) | . < mean(.) - 2 * sd(.), "Outlier", "Normal"))) %>%
+  pivot_longer(cols = everything(), names_to = "Variable", values_to = "Outlier_Status")
+
+# Figure 3.4 The plot of outliers count per variable of the mtcars dataset.
+ggplot(outliers_df, aes(x = Variable, fill = Outlier_Status)) +
+  geom_bar(position = "dodge") +
+  theme_minimal(base_size = 20) +
+  labs(title = "", x = "Variable", y = "Count")
