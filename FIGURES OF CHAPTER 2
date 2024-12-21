@@ -2,6 +2,31 @@
 # CHAPTER 2 #
 #############
 
+#Figure 2.1 Illustration of simple structured data.
+# Create data for the structured dataset
+structured_data <- data.frame(
+  Category = c("ID", "Name", "Age", "Salary"),
+  Example = c(1, "Alice", 30, 50000)
+)
+
+#Figure 2.2 Illustration of simple unstructured data.
+view(structured_data)
+
+# Example unstructured data (text-heavy, containing dates and numbers)
+unstructured_data <- c(
+  "Sakura's birthday is on 1994-12-12. He turned 30 years old.",
+  "The project deadline is January 15, 2025, with a budget of $2,000,000.",
+  "On 2022/11/30, a record high temperature of 45.6°C was reported in the city.",
+  "No specific date was mentioned, but sales increased by 15% last month."
+)
+
+# Convert the unstructured data into a data frame for processing
+data_df <- tibble(text = unstructured_data)
+
+view(data_df)
+
+
+
 #Figure 2.3 Illustration of nominal, ordinal, continuous, discrete, and binary data plot in bar plot, histogram, and scatterplot.
 
 # Load necessary libraries
