@@ -65,3 +65,82 @@ ggplot(outliers_df, aes(x = Variable, fill = Outlier_Status)) +
   geom_bar(position = "dodge") +
   theme_minimal(base_size = 20) +
   labs(title = "", x = "Variable", y = "Count")
+
+
+# Figure 3.5 Data cleaning, transformation, and standardization.
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(ggpubr) # For combining multiple plots
+
+# 1. Create a synthetic dataset with missing values and irregular scales
+set.seed(123)
+data <- data.frame(
+  ID = 1:15,
+  Feature1 = c(NA, rnorm(14, mean = 50, sd = 10)), # Some missing values
+  Feature2 = c(rnorm(10, mean = 100, sd = 20), rep(NA, 5)), # Missing values in the end
+  Feature3 = c(rnorm(10, mean = 0, sd = 1), runif(5, -3, 3)) # No missing values
+)
+
+# ----- 2. Deletion -----
+data_deleted <- data %>% drop_na()
+
+# Plot missing values before and after deletion
+plot_deleted <- ggplot(data, aes(x = ID)) +
+  geom_point(aes(y = Feature1), color = "red") +
+  geom_point(aes(y = Feature2), color = "blue") +
+  labs(title = "Original Data with Missing Values (Red/Blue)") +
+  theme_minimal(base_size = 20)
+
+plot_deleted_after <- ggplot(data_deleted, aes(x = ID)) +
+  geom_point(aes(y = Feature1), color = "red") +
+  geom_point(aes(y = Feature2), color = "blue") +
+  labs(title = "After Deletion of Rows with Missing Values") +
+  theme_minimal(base_size = 20)
+
+# ----- 3. Imputation -----
+data_imputed <- data %>%
+  mutate(
+    Feature1 = ifelse(is.na(Feature1), mean(Feature1, na.rm = TRUE), Feature1),
+    Feature2 = ifelse(is.na(Feature2), median(Feature2, na.rm = TRUE), Feature2)
+  )
+
+# Plot after imputation
+plot_imputed <- ggplot(data_imputed, aes(x = ID)) +
+  geom_point(aes(y = Feature1), color = "green") +
+  geom_point(aes(y = Feature2), color = "orange") +
+  labs(title = "After Imputation (Mean for Feature1, Median for Feature2)") +
+  theme_minimal(base_size = 20)
+
+# ----- 4. Data Transformation and Standardization -----
+# Log transformation and standardization
+data_transformed <- data_imputed %>%
+  mutate(
+    Feature1 = scale(log(Feature1 + 1)), # Adding 1 to avoid log(0)
+    Feature2 = scale(Feature2),
+    Feature3 = scale(Feature3)
+  )
+
+# Plot standardized features
+plot_transformed <- ggplot(data_transformed, aes(x = ID)) +
+  geom_line(aes(y = Feature1, color = "Feature1")) +
+  geom_line(aes(y = Feature2, color = "Feature2")) +
+  geom_line(aes(y = Feature3, color = "Feature3")) +
+  labs(
+    title = "After Data Transformation and Standardization",
+    color = "Features"
+  ) +
+  theme_minimal(base_size = 20)
+
+# ----- Combine all plots -----
+combined_plot <- ggarrange(
+  plot_deleted, plot_deleted_after, plot_imputed, plot_transformed,
+  ncol = 2, nrow = 2
+)
+
+# Display the plot
+print(combined_plot)
+
+
+
