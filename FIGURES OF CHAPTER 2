@@ -67,9 +67,49 @@ binary_plot <- ggplot(binary_data, aes(x = Category, y = Count, fill = Category)
 library(gridExtra)
 grid.arrange(nominal_plot, ordinal_plot, continuous_plot, discrete_plot, binary_plot, ncol = 2)
 
+#Figure 2.4 Illustration of different data types plot in R.
+# Illustrating Data Types in R
 
+# Load necessary libraries
+library(ggplot2)
 
-#Figure 2.4 Illustration of Likert Scale application.
+# Create example data for each type
+data <- list(
+  Numeric = runif(10, 0, 10), # Random numeric values
+  Integer = sample(1:10, 10, replace = TRUE), # Random integers
+  Character = letters[1:10], # First 10 letters of the alphabet
+  Logical = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE), # Alternating TRUE/FALSE
+  Factor = factor(c("A", "B", "A", "C", "B", "A", "C", "B", "A", "C")) # Factor levels
+)
+
+# Convert the data to a data frame for visualization
+data_frame <- data.frame(
+  Index = rep(1:10, 5),
+  Value = unlist(data),
+  Type = rep(names(data), each = 10)
+)
+
+# Ensure correct data types in the data frame
+data_frame$Value <- as.character(data_frame$Value) # Convert all to character for uniformity
+
+data_frame$Type <- factor(data_frame$Type, levels = names(data)) # Preserve the order
+
+# Plot the data using ggplot
+ggplot(data_frame, aes(x = Index, y = Value, color = Type)) +
+  geom_point(size = 4) +
+  facet_wrap(~ Type, scales = "free_y") +
+  labs(
+    title = "",
+    x = "Index",
+    y = "Value"
+  ) +
+  theme_minimal(base_size = 20) +
+  theme(
+    strip.text = element_text(size = 20, face = "bold"),
+    legend.position = "none"
+  )
+
+#Figure 2.5 Illustration of Likert Scale application.
 
 # Load necessary libraries
 library(ggplot2)
@@ -101,7 +141,7 @@ ggplot(likert_data, aes(x = Position, y = 1, label = Rating)) +
   ) +
   labs(title = "Please Rate: How satisfied are you with GIS in addressing local issues?")
 
-#Figure 2.5 Illustration of Semantic Differential Scale application.
+#Figure 2.6 Illustration of Semantic Differential Scale application.
 
 # Load the library
 library(ggplot2)
@@ -140,7 +180,7 @@ plot_scale <- ggplot() +
 # Display the plot
 print(plot_scale)
 
-#Figure 2.6 Illustration of Numerical Rating Scale application.
+#Figure 2.7 Illustration of Numerical Rating Scale application.
 
 # Load required package
 library(ggplot2)
@@ -167,7 +207,7 @@ ggplot(rating_scale, aes(x = factor(Rating), y = 1)) +
     axis.ticks.y = element_blank()
   )
 
-#Figure 2.7 Illustration of Visual Analog Scale application.
+#Figure 2.8 Illustration of Visual Analog Scale application.
 
 # Load necessary libraries
 library(ggplot2)
@@ -194,7 +234,7 @@ ggplot(scale_data, aes(x = x, y = 1)) +
   ) +
   ggtitle("Please rate your satisfaction with environmental sustainability efforts at your region")
 
-Figure 2.8 The "Five Vs" of big data and its relationship.
+Figure 2.9 The "Five Vs" of big data and its relationship.
 
 # Load necessary libraries
 library(ggplot2)
