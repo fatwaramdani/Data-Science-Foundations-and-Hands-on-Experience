@@ -2,6 +2,73 @@
 # CHAPTER 2 #
 #############
 
+#Figure 2.3 Illustration of nominal, ordinal, continuous, discrete, and binary data plot in bar plot, histogram, and scatterplot.
+
+# Load necessary libraries
+library(ggplot2)
+
+# 1. Nominal Data (Bar Plot)
+nominal_data <- data.frame(
+  Category = c("Red", "Blue", "Green", "Yellow"),
+  Count = c(10, 15, 7, 12)
+)
+
+nominal_plot <- ggplot(nominal_data, aes(x = Category, y = Count, fill = Category)) +
+  geom_bar(stat = "identity") +
+  theme_minimal(base_size = 20) +
+  ggtitle("Nominal Data (Bar Plot)")
+
+# 2. Ordinal Data (Bar Plot with Ordered Categories)
+ordinal_data <- data.frame(
+  Rating = factor(c("Poor", "Fair", "Good", "Very Good", "Excellent"),
+                  levels = c("Poor", "Fair", "Good", "Very Good", "Excellent")),
+  Count = c(5, 10, 15, 20, 25)
+)
+
+ordinal_plot <- ggplot(ordinal_data, aes(x = Rating, y = Count, fill = Rating)) +
+  geom_bar(stat = "identity") +
+  theme_minimal(base_size = 20) +
+  ggtitle("Ordinal Data (Bar Plot with Ordered Categories)")
+
+# 3. Continuous Data (Histogram)
+set.seed(42)
+continuous_data <- data.frame(Value = rnorm(1000, mean = 50, sd = 10))
+
+continuous_plot <- ggplot(continuous_data, aes(x = Value)) +
+  geom_histogram(binwidth = 2, fill = "skyblue", color = "black") +
+  theme_minimal(base_size = 20) +
+  ggtitle("Continuous Data (Histogram)")
+
+# 4. Discrete Data (Dot Plot)
+discrete_data <- data.frame(
+  Value = c(1, 2, 3, 4, 5),
+  Count = c(12, 18, 7, 10, 13)
+)
+
+discrete_plot <- ggplot(discrete_data, aes(x = Value, y = Count)) +
+  geom_point(size = 3, color = "darkred") +
+  theme_minimal(base_size = 20) +
+  ggtitle("Discrete Data (Dot Plot)") +
+  xlab("Value") +
+  ylab("Count")
+
+# 5. Binary Data (Bar Plot)
+binary_data <- data.frame(
+  Category = c("Yes", "No"),
+  Count = c(45, 55)
+)
+
+binary_plot <- ggplot(binary_data, aes(x = Category, y = Count, fill = Category)) +
+  geom_bar(stat = "identity") +
+  theme_minimal(base_size = 20) +
+  ggtitle("Binary Data (Bar Plot)")
+
+# Display plots
+library(gridExtra)
+grid.arrange(nominal_plot, ordinal_plot, continuous_plot, discrete_plot, binary_plot, ncol = 2)
+
+
+
 #Figure 2.4 Illustration of Likert Scale application.
 
 # Load necessary libraries
