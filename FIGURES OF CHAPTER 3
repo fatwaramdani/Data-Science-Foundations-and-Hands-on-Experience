@@ -142,7 +142,44 @@ combined_plot <- ggarrange(
 # Display the plot
 print(combined_plot)
 
+# Figure 3.6 Clustering for data reduction, where data points grouped into clusters with centroids.
+# # Load necessary libraries
+library(ggplot2)
 
+# Generate synthetic data
+set.seed(123)  # Set seed for reproducibility
+n_points <- 300
+x <- rbind(
+  matrix(rnorm(n_points, mean = 2, sd = 0.6), ncol = 2),
+  matrix(rnorm(n_points, mean = 5, sd = 0.8), ncol = 2),
+  matrix(rnorm(n_points, mean = 8, sd = 0.5), ncol = 2)
+)
+data <- data.frame(x1 = x[, 1], x2 = x[, 2])
+
+# Perform K-means clustering
+k <- 3  # Number of clusters
+kmeans_result <- kmeans(data, centers = k)
+
+# Add cluster labels and centroids to the data frame
+data$cluster <- as.factor(kmeans_result$cluster)
+centroids <- as.data.frame(kmeans_result$centers)
+colnames(centroids) <- c("x1", "x2")  # Rename columns to match data frame
+
+# Plot the data and clusters
+ggplot(data, aes(x = x1, y = x2, color = cluster)) +
+  geom_point(size = 2, alpha = 0.6) +  # Data points
+  geom_point(data = centroids, aes(x = x1, y = x2), color = "black", size = 4, shape = 8) +  # Centroids
+  labs(
+    title = "Clustering for Data Reduction",
+    subtitle = "Data points grouped into clusters with centroids",
+    x = "Feature 1",
+    y = "Feature 2"
+  ) +
+  theme_minimal(base_size = 20) +
+  theme(plot.title = element_text(hjust = 0.5), 
+        plot.subtitle = element_text(hjust = 0.5))
+
+# Figure 3.8 Illustration of PCA.
 ## Load required libraries
 library(ggplot2)
 library(ggrepel)
@@ -196,7 +233,7 @@ ggplot(pca_data, aes(x = PC1, y = PC2)) +
   theme_minimal(base_size = 20)
 
 
-# Figure 3.8 Illustration of ​​the top terms per topic in the LDA model and document-topic distribution.
+# Figure 3.9 Illustration of ​​the top terms per topic in the LDA model and document-topic distribution.
 # Load required libraries
 library(topicmodels)  # For LDA modeling
 library(ggplot2)      # For visualization
@@ -252,7 +289,7 @@ ggplot(sample_docs, aes(x = as.factor(document), y = gamma, fill = as.factor(top
   scale_fill_brewer(palette = "Set3", name = "Topic")
 
 
-# Figure 3.9 t-SNE plot of iris dataset.
+# Figure 3.10 t-SNE plot of iris dataset.
 # Load libraries
 library(Rtsne)
 library(ggplot2)
