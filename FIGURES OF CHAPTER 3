@@ -143,4 +143,163 @@ combined_plot <- ggarrange(
 print(combined_plot)
 
 
+## Load required libraries
+library(ggplot2)
+library(ggrepel)
+
+# Generate a simple dataset
+set.seed(42)
+data <- data.frame(
+  x = rnorm(100, mean = 5, sd = 2),
+  y = rnorm(100, mean = 3, sd = 1)
+)
+
+# Perform PCA
+pca_result <- prcomp(data, center = TRUE, scale. = TRUE)
+
+# Extract PCA components
+pca_data <- data.frame(
+  PC1 = pca_result$x[, 1],
+  PC2 = pca_result$x[, 2]
+)
+
+# Create a scatter plot of the PCA results
+ggplot(pca_data, aes(x = PC1, y = PC2)) +
+  geom_point(color = "blue", alpha = 0.7) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +
+  geom_segment(
+    x = 0, y = 0, 
+    xend = pca_result$rotation[1, 1] * max(pca_data$PC1),
+    yend = pca_result$rotation[2, 1] * max(pca_data$PC1),
+    arrow = arrow(length = unit(0.2, "cm")),
+    color = "red", size = 1.2
+  ) +
+  geom_segment(
+    x = 0, y = 0, 
+    xend = pca_result$rotation[1, 2] * max(pca_data$PC2),
+    yend = pca_result$rotation[2, 2] * max(pca_data$PC2),
+    arrow = arrow(length = unit(0.2, "cm")),
+    color = "green", size = 1.2
+  ) +
+  annotate("text", x = pca_result$rotation[1, 1] * max(pca_data$PC1) * 1.2,
+           y = pca_result$rotation[2, 1] * max(pca_data$PC1) * 1.2,
+           label = "PC1", color = "red", size = 5) +
+  annotate("text", x = pca_result$rotation[1, 2] * max(pca_data$PC2) * 1.2,
+           y = pca_result$rotation[2, 2] * max(pca_data$PC2) * 1.2,
+           label = "PC2", color = "green", size = 5) +
+  labs(
+    title = "",
+    x = "Principal Component 1 (PC1)",
+    y = "Principal Component 2 (PC2)"
+  ) +
+  theme_minimal(base_size = 20)
+
+
+# Figure 3.8 Illustration of ​​the top terms per topic in the LDA model and document-topic distribution.
+# Load required libraries
+library(topicmodels)  # For LDA modeling
+library(ggplot2)      # For visualization
+library(tidyverse)    # For data wrangling and visualization
+library(tidytext)     # For text analysis
+
+# Simulate a sample document-term matrix
+set.seed(123)
+data("AssociatedPress")
+dtm <- AssociatedPress[1:100, ]  # Use a subset for simplicity
+
+# Fit an LDA model
+k <- 3  # Number of topics
+lda_model <- LDA(dtm, k = k, control = list(seed = 123))
+
+# Extract topic-term matrix
+topic_terms <- tidy(lda_model, matrix = "beta")
+
+# Extract top terms per topic
+top_terms <- topic_terms %>%
+  group_by(topic) %>%
+  slice_max(order_by = beta, n = 5) %>%
+  ungroup() %>%
+  mutate(term = reorder_within(term, beta, topic))
+
+# Plot top terms per topic
+ggplot(top_terms, aes(x = beta, y = term, fill = as.factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free_y") +
+  scale_y_reordered() +
+  labs(
+    title = "",
+    x = "Beta (Word Importance in Topic)",
+    y = "Terms"
+  ) +
+  theme_minimal(base_size = 20)
+
+# Extract document-topic distribution
+doc_topics <- tidy(lda_model, matrix = "gamma")
+
+# Plot document-topic distribution for a sample of documents
+sample_docs <- doc_topics %>% 
+  filter(document %in% sample(unique(document), 10))
+
+ggplot(sample_docs, aes(x = as.factor(document), y = gamma, fill = as.factor(topic))) +
+  geom_col() +
+  labs(
+    title = "",
+    x = "Document",
+    y = "Gamma (Topic Proportion)"
+  ) +
+  theme_minimal(base_size = 20) +
+  scale_fill_brewer(palette = "Set3", name = "Topic")
+
+
+# Figure 3.9 t-SNE plot of iris dataset.
+# Load libraries
+library(Rtsne)
+library(ggplot2)
+
+# Generate sample data (e.g., Iris dataset)
+data(iris)
+
+# Prepare the data for t-SNE (remove non-numeric columns)
+data_matrix <- as.matrix(iris[, -5])  # Exclude the Species column
+
+# Remove duplicate rows
+data_matrix <- unique(data_matrix)
+
+# Perform t-SNE
+tsne_result <- Rtsne(
+  data_matrix,
+  dims = 2,           # Reduce to 2 dimensions for visualization
+  perplexity = 30,    # Recommended range: 5-50 (adjust as needed)
+  theta = 0.5,        # Speed/accuracy trade-off (lower = more accurate)
+  verbose = TRUE,
+  max_iter = 1000     # Number of iterations
+)
+
+# Create a data frame for plotting
+# Since duplicates were removed, adjust the Species labels accordingly
+unique_indices <- which(!duplicated(as.matrix(iris[, -5])))
+plot_data <- data.frame(
+  X = tsne_result$Y[, 1],  # t-SNE dimension 1
+  Y = tsne_result$Y[, 2],  # t-SNE dimension 2
+  Species = iris$Species[unique_indices]  # Adjusted Species labels
+)
+
+# Plot the t-SNE result using ggplot2
+ggplot(plot_data, aes(x = X, y = Y, color = Species)) +
+  geom_point(size = 3, alpha = 0.7) +
+  labs(
+    title = "",
+    x = "t-SNE Dimension 1",
+    y = "t-SNE Dimension 2"
+  ) +
+  theme_minimal(base_size = 20) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10)
+  )
+
+
+
 
