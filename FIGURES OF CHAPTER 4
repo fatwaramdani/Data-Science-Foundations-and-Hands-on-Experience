@@ -83,50 +83,40 @@ ggplot(summary_stats_long, aes(x = Variable, y = Value, fill = Metric)) +
   theme_minimal(base_size = 20)
 
 # Figure 4.2 Skewness and kurtosis.
-
-# Load required libraries
+# Load necessary libraries
 library(ggplot2)
-library(dplyr)
 
-# Generate data
-set.seed(123) # For reproducibility
+# Set seed for reproducibility
+set.seed(123)
 
-# Normal Distribution (Mesokurtic)
-normal_data <- data.frame(
-  value = rnorm(1000, mean = 0, sd = 1),
-  type = "Normal Distribution (Mesokurtic)"
+# Generate random data for three types of skewness
+# Negative skew
+neg_skew_data <- rbeta(1000, 2, 5)
+
+# Normal distribution
+normal_data <- rnorm(1000)
+
+# Positive skew
+pos_skew_data <- rbeta(1000, 5, 2)
+
+# Create a data frame with the three datasets
+skew_data <- data.frame(
+  value = c(neg_skew_data, normal_data, pos_skew_data),
+  type = rep(c("Negative Skew", "Normal", "Positive Skew"), each = 1000)
 )
 
-# Positive Skewness (Leptokurtic)
-positive_skew_data <- data.frame(
-  value = rlnorm(1000, meanlog = 0, sdlog = 0.5),
-  type = "Positive Skewness (Leptokurtic)"
-)
+# Plot the data using ggplot
+ggplot(skew_data, aes(x = value, fill = type)) +
+  geom_histogram(binwidth = 0.05, alpha = 0.7, position = "identity") +
+  geom_density(alpha = 0.6, size = 1) +
+  facet_wrap(~type, scales = "free", ncol = 1) +
+  theme_minimal(base_size = 20) +
+  labs(title = "",
+       x = "Value",
+       y = "Density") +
+  scale_fill_manual(values = c("skyblue", "orange", "lightgreen")) +
+  theme(legend.position = "none")
 
-# Negative Skewness (Platykurtic)
-negative_skew_data <- data.frame(
-  value = -1 * rlnorm(1000, meanlog = 0, sdlog = 0.5),
-  type = "Negative Skewness (Platykurtic)"
-)
-
-# Combine all data
-distribution_data <- bind_rows(normal_data, positive_skew_data, negative_skew_data)
-
-# Plot the distributions
-ggplot(distribution_data, aes(x = value, fill = type)) +
-  geom_density(alpha = 0.6) +
-  scale_fill_manual(values = c(
-    "Normal Distribution (Mesokurtic)" = "blue",
-    "Positive Skewness (Leptokurtic)" = "green",
-    "Negative Skewness (Platykurtic)" = "red"
-  )) +
-  labs(
-    title = "",
-    x = "Value",
-    y = "Density",
-    fill = "Distribution Type"
-  ) +
-  theme_minimal(base_size = 15)
 
 # Load necessary library
 library(ggplot2)
