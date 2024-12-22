@@ -457,3 +457,41 @@ ggplot(plot_data, aes(x = x, y = y, color = as.factor(split))) +
   theme_minimal(base_size = 20)
 
 
+# Figure 3.14 Pareto Principle: 80/20 Rule.
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Create a sample dataset to demonstrate the Pareto Principle
+set.seed(42)
+data <- data.frame(
+  Cause = paste("Cause", 1:20),
+  Effect = sample(1:100, 20, replace = TRUE)
+)
+
+# Sort the data by Effect in descending order
+data <- data %>%
+  arrange(desc(Effect))
+
+# Calculate cumulative percentage of effects
+data <- data %>%
+  mutate(CumulativeEffect = cumsum(Effect) / sum(Effect) * 100)
+
+# Plot the Pareto Chart
+ggplot(data, aes(x = reorder(Cause, -Effect), y = Effect)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  geom_line(aes(y = CumulativeEffect), color = "red", size = 1.5, group = 1) +
+  geom_point(aes(y = CumulativeEffect), color = "red", size = 3) +
+  scale_y_continuous(
+    sec.axis = sec_axis(~ ., name = "Cumulative Percentage", labels = scales::percent)
+  ) +
+  labs(
+    title = "",
+    x = "Cause",
+    y = "Effect"
+  ) +
+  theme_minimal(base_size = 20) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  annotate("text", x = 5, y = 95, label = "80% of the effect", color = "red", size = 5)
+
+
