@@ -338,5 +338,43 @@ ggplot(plot_data, aes(x = X, y = Y, color = Species)) +
   )
 
 
+# Figure 3.11 Illustration of holdout method.
+# Load required libraries
+library(ggplot2)
+library(caret)
+
+# Generate a sample dataset
+set.seed(123)
+n <- 100
+data <- data.frame(
+  x = rnorm(n),
+  y = rnorm(n)
+)
+
+# Split data using Holdout Method (80% training, 20% testing)
+set.seed(123)
+holdout_split <- createDataPartition(data$y, p = 0.8, list = FALSE)
+train_data_holdout <- data[holdout_split, ]
+test_data_holdout <- data[-holdout_split, ]
+
+# Create 5-fold Cross-validation
+cv_folds <- trainControl(method = "cv", number = 5)
+
+# Create Leave-One-Out Cross-Validation (LOOCV)
+loocv_folds <- trainControl(method = "LOOCV")
+
+# Function to plot the different splits
+plot_splits <- function(data, holdout_split) {
+  # Plot points for training (red) and testing (green) data for Holdout method
+  ggplot(data) +
+    geom_point(aes(x = x, y = y), color = 'blue', alpha = 0.5) +  # All data in blue
+    geom_point(data = data[holdout_split, ], aes(x = x, y = y), color = 'red') +  # Holdout training data in red
+    geom_point(data = data[-holdout_split, ], aes(x = x, y = y), color = 'green') +  # Holdout test data in green
+    labs(title = "Holdout Method: Red (Train) and Green (Test)") +
+    theme_minimal(base_size = 20)
+}
+
+# Call the function to plot
+plot_splits(data, holdout_split)
 
 
