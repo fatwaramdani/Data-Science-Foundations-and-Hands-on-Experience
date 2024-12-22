@@ -82,7 +82,7 @@ ggplot(summary_stats_long, aes(x = Variable, y = Value, fill = Metric)) +
        x = "Variable", y = "Value") +
   theme_minimal(base_size = 20)
 
-# Figure 4.2 Skewness and kurtosis.
+# Figure 4.3 Skewness and kurtosis.
 # Load necessary libraries
 library(ggplot2)
 
@@ -128,14 +128,14 @@ data <- data.frame(
   y = rnorm(100, mean = 30, sd = 5)   # Random normal data for y
 )
 
-# Figure 4.1 Histograms
+# Figure 4.4 Histograms
 ggplot(data, aes(x = x)) +
   geom_histogram(binwidth = 5, fill = "skyblue", color = "black") +
   labs(title = "Histogram of X", x = "Values of X", y = "Frequency", size = 5) +
   geom_text(aes(x = 65, y = 15, label = "Bins represent frequency"), color = "red", size = 5) +
   theme_minimal(base_size = 20)
 
-# Figure 4.2 Boxplot
+# Figure 4.5 Boxplot
 ggplot(data, aes(x = "", y = x)) +
   geom_boxplot(fill = "pink", color = "black", width = 0.2) + # Reduced width for a narrower boxplot
   labs(title = "", y = "Values of X") + 
@@ -154,7 +154,7 @@ ggplot(data, aes(x = "", y = x)) +
         axis.text = element_text(size = 10)) 
 
 
-# Figure 4.3 Scatterplot.
+# Figure 4.6 Scatterplot.
 ggplot(data, aes(x = x, y = y)) +
   geom_point(color = "purple") +
   labs(title = "", x = "Values of X", y = "Values of Y", size = 5) +
@@ -162,7 +162,7 @@ ggplot(data, aes(x = x, y = y)) +
   theme_minimal(base_size = 20)
 
 
-# Figure 4.3 Illustration of “Negative correlation", "No correlation", and "Positive correlation”.
+# Figure 4.7 Illustration of “Negative correlation", "No correlation", and "Positive correlation”.
 
 # Load necessary library
 library(ggplot2)
@@ -198,7 +198,7 @@ ggplot(data, aes(x = x, y = y)) +
        x = "X-axis",
        y = "Y-axis")
 
-# Figure 4.7 Illustrate the normal distribution, binomial distribution, and poisson distribution.
+# Figure 4.8 Illustrate the normal distribution, binomial distribution, and poisson distribution.
 
 # Load required library
 library(ggplot2)
@@ -244,7 +244,7 @@ library(gridExtra)
 grid.arrange(plot_normal(), plot_binomial(), plot_poisson(), nrow = 1)
 
 
-#Figure 4.9 Illustration of population and sample.
+#Figure 4.10 Illustration of population and sample.
 
 # Load required libraries
 library(ggplot2)
@@ -279,7 +279,7 @@ ggplot() +
   theme_minimal(base_size = 20)
 
 
-# Figure 4.10 illustration of confidence interval and errors. 
+# Figure 4.11 illustration of confidence interval and errors. 
 # Load necessary library
 library(ggplot2)
 
