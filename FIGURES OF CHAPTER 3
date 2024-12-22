@@ -494,4 +494,93 @@ ggplot(data, aes(x = reorder(Cause, -Effect), y = Effect)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   annotate("text", x = 5, y = 95, label = "80% of the effect", color = "red", size = 5)
 
+#Figure 3.15 Hierarchical clustering, K-Means, and Density-baed clustering using the iris dataset.
+# Load necessary libraries
+library(ggplot2)
+library(cluster)
+library(dbscan)
+library(factoextra)
+
+# Use the iris dataset
+data(iris)
+iris_data <- iris[, -5] # Remove the Species column for clustering
+
+# --- Hierarchical Clustering ---
+# Compute distance matrix and hierarchical clustering
+dist_matrix <- dist(iris_data, method = "euclidean")
+hc <- hclust(dist_matrix, method = "ward.D2")
+
+# Cut tree into 3 clusters
+hc_clusters <- cutree(hc, k = 3)
+
+# Visualize Hierarchical Clustering
+fviz_cluster(list(data = iris_data, cluster = hc_clusters), 
+             geom = "point", 
+             ellipse.type = "convex", 
+             show.clust.cent = FALSE, 
+             main = "Hierarchical Clustering")
+
+# --- K-Means Clustering ---
+# Perform K-Means with 3 clusters
+set.seed(123) # For reproducibility
+kmeans_result <- kmeans(iris_data, centers = 3, nstart = 25)
+
+# Visualize K-Means Clustering
+fviz_cluster(kmeans_result, 
+             data = iris_data, 
+             geom = "point", 
+             ellipse.type = "convex", 
+             main = "K-Means Clustering")
+
+# --- Density-Based Clustering (DBSCAN) ---
+# Standardize the data for DBSCAN
+scaled_data <- scale(iris_data)
+
+# Perform DBSCAN
+dbscan_result <- dbscan(scaled_data, eps = 0.5, minPts = 5)
+
+# Add cluster results to the dataset
+iris_dbscan <- iris
+iris_dbscan$Cluster <- as.factor(dbscan_result$cluster)
+
+# Visualize DBSCAN Clustering
+ggplot(iris_dbscan, aes(x = Petal.Length, y = Petal.Width, color = Cluster)) +
+  geom_point(size = 3) +
+  scale_color_manual(values = c("gray", "red", "blue", "green", "orange")) +
+  labs(title = "DBSCAN Clustering", color = "Cluster") +
+  theme_minimal(base_size = 20)
+
+
+#Figure 3.16 Illustration of logistic regression.
+# Load necessary libraries
+library(ggplot2)
+
+# Generate sample data
+set.seed(123)
+x <- seq(-10, 10, length.out = 100)                      # Predictor variable
+prob <- 1 / (1 + exp(-0.8 * x + 2))                     # True logistic function
+outcome <- rbinom(100, size = 1, prob = prob)           # Binary response variable
+
+data <- data.frame(x = x, outcome = outcome, prob = prob)
+
+# Fit logistic regression model
+logistic_model <- glm(outcome ~ x, family = binomial, data = data)
+
+# Generate predictions
+x_pred <- seq(-10, 10, length.out = 100)
+predicted_probs <- predict(logistic_model, newdata = data.frame(x = x_pred), type = "response")
+
+# Create a plot
+ggplot(data, aes(x = x, y = outcome)) +
+  geom_point(aes(color = as.factor(outcome)), size = 3, alpha = 0.8) +  # Data points
+  stat_function(fun = function(x) 1 / (1 + exp(-coef(logistic_model)[1] - coef(logistic_model)[2] * x)), 
+                color = "blue", size = 1.2) +                         # Logistic regression curve
+  labs(title = "",
+       x = "Predictor Variable (x)",
+       y = "Outcome (Probability)") +
+  scale_color_manual(values = c("red", "green"),
+                     name = "Outcome",
+                     labels = c("0", "1")) +
+  theme_minimal(base_size = 20) +
+  theme(plot.title = element_text(hjust = 0.5))
 
