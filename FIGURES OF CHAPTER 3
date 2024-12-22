@@ -378,3 +378,82 @@ plot_splits <- function(data, holdout_split) {
 plot_splits(data, holdout_split)
 
 
+# Figure 3.12 Illustration of cross-validation data slit, showing the training data in blue and testing data in red.
+# Load necessary libraries
+library(ggplot2)
+library(caret)
+
+# Create a sample dataset
+set.seed(123)
+data <- data.frame(
+  x = rnorm(100),
+  y = rnorm(100)
+)
+
+# Create a train-test split using 10-fold cross-validation
+train_control <- trainControl(method = "cv", number = 10)
+
+# Perform cross-validation using a simple linear model
+model <- train(y ~ x, data = data, method = "lm", trControl = train_control)
+
+# Generate cross-validation indices manually
+cv_indices <- createFolds(data$y, k = 10)
+
+# Plot the data with training and testing splits for each fold
+ggplot(data) +
+  geom_point(aes(x = x, y = y), color = "gray") +
+  # Use the first fold for training and testing
+  geom_point(data = data[cv_indices[[1]], ], aes(x = x, y = y), color = "blue") +
+  geom_point(data = data[-cv_indices[[1]], ], aes(x = x, y = y), color = "red") +
+  labs(title = "Cross-validation Data Split (Fold 1)",
+       x = "X Value",
+       y = "Y Value") +
+  theme_minimal(base_size = 20) +
+  theme(legend.position = "none")
+
+
+# Figure 3.13 LOO-CV plot showing the LOO-CV process with different colors representing each split.
+# Load necessary libraries
+library(ggplot2)
+
+# Simulate a dataset for illustration (you can replace this with your own dataset)
+set.seed(123)
+data <- data.frame(
+  x = rnorm(30),  # 30 random data points
+  y = rnorm(30)   # Corresponding target values
+)
+
+# Function to perform Leave-One-Out Cross-Validation (LOO-CV)
+loo_cv <- function(data) {
+  n <- nrow(data)
+  indices <- 1:n
+  split_indices <- lapply(indices, function(i) setdiff(indices, i))  # List of LOO splits
+  return(split_indices)
+}
+
+# Perform Leave-One-Out Cross-Validation
+splits <- loo_cv(data)
+
+# Create a data frame to store the plot data
+plot_data <- data.frame(
+  x = numeric(0),  # Empty vectors to store values
+  y = numeric(0),
+  split = integer(0)
+)
+
+# Loop over each split and store the corresponding data points for plotting
+for (i in 1:length(splits)) {
+  # For each split, add all data points with the current split identifier
+  split_data <- data[splits[[i]], ]
+  plot_data <- rbind(plot_data, data.frame(x = split_data$x, y = split_data$y, split = rep(i, nrow(split_data))))
+}
+
+# Create the plot
+ggplot(plot_data, aes(x = x, y = y, color = as.factor(split))) +
+  geom_point(size = 3, alpha = 0.7) +
+  labs(title = "Leave-One-Out Cross-Validation (LOO-CV)",
+       x = "X Variable", y = "Y Variable",
+       color = "Split") +
+  theme_minimal(base_size = 20)
+
+
