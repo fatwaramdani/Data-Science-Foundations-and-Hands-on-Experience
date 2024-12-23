@@ -1,3 +1,380 @@
 #############
-# CHAPTER 5 #
+# CHAPTER 6 #
 #############
+
+#Figure 6.4 Decision tree of iris dataset.
+# Load required libraries
+library(randomForest)
+library(ggplot2)
+library(rpart.plot) # For visualizing individual decision trees
+
+# Load the iris dataset
+data(iris)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Train a Random Forest model
+rf_model <- randomForest(Species ~ ., data = iris, ntree = 100, importance = TRUE)
+
+# Print the model summary
+print(rf_model)
+
+# Plot the model's error rates
+plot(rf_model, main = "Error Rates of Random Forest Model")
+
+# Visualize variable importance
+importance_df <- as.data.frame(importance(rf_model))
+importance_df$Variable <- rownames(importance_df)
+
+# Create a ggplot for variable importance
+ggplot(importance_df, aes(x = reorder(Variable, MeanDecreaseGini), y = MeanDecreaseGini)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Variable Importance (Mean Decrease Gini)",
+       x = "Variables",
+       y = "Importance") +
+  theme_minimal(base_size = 20)
+
+# Visualize one of the trees from the random forest
+# Extracting and plotting the first tree
+tree <- getTree(rf_model, k = 1, labelVar = TRUE)
+tree_model <- rpart::rpart(as.formula(paste(colnames(tree)[2], "~", paste(colnames(tree)[-1], collapse = "+"))),
+                           data = iris, method = "class")
+rpart.plot(tree_model)
+
+Figure 6.5 Error rates and variable of importance of Random Forest model using iris dataset.
+# Load required libraries
+library(randomForest)
+library(ggplot2)
+library(rpart.plot) # For visualizing individual decision trees
+
+# Load the iris dataset
+data(iris)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Train a Random Forest model
+rf_model <- randomForest(Species ~ ., data = iris, ntree = 100, importance = TRUE)
+
+# Print the model summary
+print(rf_model)
+
+# Plot the model's error rates
+plot(rf_model, main = "Error Rates of Random Forest Model")
+
+# Visualize variable importance
+importance_df <- as.data.frame(importance(rf_model))
+importance_df$Variable <- rownames(importance_df)
+
+# Create a ggplot for variable importance
+ggplot(importance_df, aes(x = reorder(Variable, MeanDecreaseGini), y = MeanDecreaseGini)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  labs(title = "",
+       x = "Variables",
+       y = "Importance") +
+  theme_minimal(base_size = 20)
+
+# Visualize one of the trees from the random forest
+# Extracting and plotting the first tree
+tree <- getTree(rf_model, k = 1, labelVar = TRUE)
+tree_model <- rpart::rpart(as.formula(paste(colnames(tree)[2], "~", paste(colnames(tree)[-1], collapse = "+"))),
+                           data = iris, method = "class")
+rpart.plot(tree_model)
+
+#Figure 6.6 CART model.
+# Load necessary libraries
+library(rpart)        # For building the CART model
+library(rpart.plot)   # For visualizing the tree
+
+# Create a sample dataset
+set.seed(123) # Set seed for reproducibility
+data <- data.frame(
+  Age = sample(18:70, 100, replace = TRUE),
+  Income = sample(20000:100000, 100, replace = TRUE),
+  Purchased = sample(c("Yes", "No"), 100, replace = TRUE)
+)
+
+# Convert target variable to a factor
+data$Purchased <- as.factor(data$Purchased)
+
+# Build the CART model
+cart_model <- rpart(Purchased ~ Age + Income, data = data, method = "class")
+
+# Plot the tree (simple and compact)
+rpart.plot(
+  cart_model, 
+  type = 1,      # Compact layout with splits labeled
+  extra = 0,     # Show only the decision split labels
+)
+
+
+#Figure 6.7 SVM decision boundary.
+# Install necessary package if not already installed
+#if (!require("e1071")) install.packages("e1071", dependencies = TRUE)
+
+# Load the e1071 library
+library(e1071)
+
+# Simulate some data
+set.seed(123)  # For reproducibility
+n <- 100  # Number of points per class
+x1 <- rbind(
+  cbind(rnorm(n, mean = 2), rnorm(n, mean = 2)),
+  cbind(rnorm(n, mean = 5), rnorm(n, mean = 5))
+)
+y <- as.factor(c(rep(1, n), rep(-1, n)))  # Labels for two classes
+
+# Combine data into a data frame
+data <- data.frame(x = x1, y = y)
+
+# Train an SVM model with a linear kernel
+svm_model <- svm(y ~ ., data = data, kernel = "linear", cost = 1, scale = FALSE)
+
+# Plot the data points
+plot(data$x.1, data$x.2, col = as.numeric(data$y) + 1, pch = 19, xlab = "X1", ylab = "X2")
+title("SVM Decision Boundary and Support Vectors")
+
+# Add the decision boundary
+w <- t(svm_model$coefs) %*% svm_model$SV  # Calculate weights
+b <- -svm_model$rho  # Intercept
+
+# Function for decision boundary
+abline(a = -b / w[2], b = -w[1] / w[2], col = "blue", lwd = 2)  # Decision boundary
+
+# Add margins
+abline(a = (-b + 1) / w[2], b = -w[1] / w[2], col = "red", lty = 2)  # Positive margin
+abline(a = (-b - 1) / w[2], b = -w[1] / w[2], col = "red", lty = 2)  # Negative margin
+
+# Highlight support vectors
+points(svm_model$SV, col = "purple", pch = 5, cex = 1.5)
+legend("topleft", legend = c("Class 1", "Class -1", "Support Vectors"), 
+       col = c(2, 3, "purple"), pch = c(19, 19, 5))
+
+
+#Figure 6.8 Illustration of naive bayes.
+# Load necessary libraries
+library(ggplot2)
+library(e1071)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Generate synthetic data
+n <- 200
+class1 <- data.frame(x = rnorm(n, mean = 3, sd = 1), y = rnorm(n, mean = 3, sd = 1), class = 'Class 1')
+class2 <- data.frame(x = rnorm(n, mean = 7, sd = 1), y = rnorm(n, mean = 7, sd = 1), class = 'Class 2')
+
+# Combine the data
+data <- rbind(class1, class2)
+data$class <- as.factor(data$class)
+
+# Train a Naive Bayes classifier
+model <- naiveBayes(class ~ ., data = data)
+
+# Generate grid for decision boundary
+x_grid <- seq(min(data$x) - 1, max(data$x) + 1, length = 100)
+y_grid <- seq(min(data$y) - 1, max(data$y) + 1, length = 100)
+grid <- expand.grid(x = x_grid, y = y_grid)
+
+# Predict class probabilities for the grid
+grid$prob <- predict(model, grid, type = "raw")[, 1]
+grid$class <- predict(model, grid)
+
+# Plot the data points and decision boundary
+ggplot(data, aes(x = x, y = y, color = class)) +
+  geom_point(size = 2) +
+  geom_contour(data = grid, aes(z = prob), breaks = 0.5, color = "black") +
+  geom_point(data = grid, aes(x = x, y = y, fill = class), alpha = 0.3, shape = 22, size = 0.5) +
+  scale_color_manual(values = c("blue", "red")) +
+  labs(title = "",
+       x = "Feature 1",
+       y = "Feature 2",
+       color = "Class") +
+  theme_minimal(base_size = 20)
+
+
+Figure 6.9 The Neural Network architecture and its decision boundary. 
+# Install and load the necessary package
+#if (!require("neuralnet")) install.packages("neuralnet", dependencies = TRUE)
+library(neuralnet)
+
+# Create the XOR dataset
+xor_data <- data.frame(
+  Input1 = c(0, 0, 1, 1),
+  Input2 = c(0, 1, 0, 1),
+  Output = c(0, 1, 1, 0)
+)
+
+# View the dataset
+print("XOR Dataset:")
+print(xor_data)
+
+# Train the Neural Network
+set.seed(123)  # For reproducibility
+nn_model <- neuralnet(
+  Output ~ Input1 + Input2,  # Formula for the model
+  data = xor_data,          # Training dataset
+  hidden = c(2),            # One hidden layer with 2 neurons
+  linear.output = FALSE,    # Use logistic activation (for binary classification)
+  threshold = 0.01          # Stopping criteria
+)
+
+# Print summary of the model
+print("Neural Network Model Summary:")
+print(nn_model)
+
+# Plot the Neural Network
+plot(nn_model, rep = "best", show.weights = TRUE)  # 'rep' specifies which repetition to plot if multiple
+
+# Generate a grid of points to visualize decision boundaries
+grid_points <- expand.grid(
+  Input1 = seq(0, 1, length.out = 100),
+  Input2 = seq(0, 1, length.out = 100)
+)
+
+# Predict outputs for the grid
+grid_points$Prediction <- compute(nn_model, grid_points[, c("Input1", "Input2")])$net.result
+grid_points$Prediction <- ifelse(grid_points$Prediction > 0.5, 1, 0)  # Threshold for binary classification
+
+# Plot decision boundaries with ggplot2
+ggplot() +
+  geom_tile(data = grid_points, aes(x = Input1, y = Input2, fill = factor(Prediction)), alpha = 0.5) +
+  geom_point(data = xor_data, aes(x = Input1, y = Input2, color = factor(Output)), size = 3) +
+  scale_fill_manual(values = c("0" = "red", "1" = "blue"), name = "Prediction") +
+  scale_color_manual(values = c("0" = "darkred", "1" = "darkblue"), name = "Actual") +
+  labs(title = "", x = "Input1", y = "Input2") +
+  theme_minimal(base_size = 20)
+
+
+#Figure 6.10 The KNN decision boundary of synthetic 2D dataset.
+# Load required libraries
+library(ggplot2)
+library(class)
+library(caret)
+
+# Generate synthetic 2D dataset
+set.seed(123)
+n <- 200  # Number of points
+x1 <- rbind(matrix(rnorm(n, mean = 2, sd = 1), ncol = 2), 
+            matrix(rnorm(n, mean = -2, sd = 1), ncol = 2))
+y1 <- factor(c(rep(1, n / 2), rep(2, n / 2)))
+
+data <- data.frame(x1, y1)
+colnames(data) <- c("x", "y", "class")
+
+# Train-test split
+set.seed(123)
+trainIndex <- createDataPartition(data$class, p = 0.8, list = FALSE)
+trainData <- data[trainIndex, ]
+testData <- data[-trainIndex, ]
+
+# Define k-NN classifier
+k <- 5  # Number of neighbors
+predictedClass <- knn(train = trainData[, 1:2],
+                      test = testData[, 1:2],
+                      cl = trainData$class,
+                      k = k)
+
+# Create a grid for decision boundary
+x_range <- seq(min(data$x) - 1, max(data$x) + 1, length.out = 100)
+y_range <- seq(min(data$y) - 1, max(data$y) + 1, length.out = 100)
+grid <- expand.grid(x = x_range, y = y_range)
+
+# Predict class for each point in the grid
+grid$predicted <- knn(train = trainData[, 1:2],
+                      test = grid,
+                      cl = trainData$class,
+                      k = k)
+
+# Plot the decision boundary
+ggplot() +
+  geom_point(data = grid, aes(x = x, y = y, color = predicted), alpha = 0.2) +
+  geom_point(data = trainData, aes(x = x, y = y, shape = class), size = 3) +
+  geom_point(data = testData, aes(x = x, y = y, shape = class), size = 3, color = "black") +
+  labs(title = "",
+       x = "X1",
+       y = "X2",
+       color = "Predicted Class",
+       shape = "True Class") +
+  theme_minimal(base_size = 20) +
+  scale_color_manual(values = c("#1b9e77", "#d95f02")) +
+  theme(legend.position = "bottom")
+
+
+#Figure 6.11 The the CNN architecture.
+# Load the DiagrammeR library
+if (!requireNamespace("DiagrammeR", quietly = TRUE)) {
+  install.packages("DiagrammeR")
+}
+library(DiagrammeR)
+
+# Define the CNN architecture in DOT language
+cnn_diagram <- "
+digraph CNN {
+  rankdir=LR;  // Set left-to-right layout
+
+  // Define node shapes
+  node [shape=box, style=rounded, fontname=Helvetica, fontsize=10];
+
+  // Input layer
+  Input [label=\"Input Layer\\n(e.g., 32x32x3)\", shape=box];
+
+  // Convolutional and pooling layers
+  C1 [label=\"Conv Layer 1\\n(3x3x16)\", shape=box];
+  P1 [label=\"Pooling Layer 1\\n(2x2)\", shape=box];
+  C2 [label=\"Conv Layer 2\\n(3x3x32)\", shape=box];
+  P2 [label=\"Pooling Layer 2\\n(2x2)\", shape=box];
+
+  // Fully connected and output layers
+  FC1 [label=\"Fully Connected Layer\\n(128 units)\", shape=box];
+  Output [label=\"Output Layer\\n(Softmax)\", shape=box];
+
+  // Connect the nodes
+  Input -> C1 -> P1 -> C2 -> P2 -> FC1 -> Output;
+}
+"
+
+# Render the CNN diagram
+grViz(cnn_diagram)
+
+#Figure 6.12 GBM of Boston dataset.
+# Install and load required packages
+#install.packages("gbm")
+#install.packages("caret")  # For dataset splitting
+library(gbm)
+library(caret)
+
+# Load a sample dataset (e.g., Boston housing data)
+data("Boston", package = "MASS")
+
+# Split the data into training and testing sets
+set.seed(123)  # Set seed for reproducibility
+trainIndex <- createDataPartition(Boston$medv, p = 0.8, list = FALSE)
+trainData <- Boston[trainIndex, ]
+testData <- Boston[-trainIndex, ]
+
+# Fit a Gradient Boosting Model
+gbm_model <- gbm(medv ~ ., 
+                 data = trainData, 
+                 distribution = "gaussian", 
+                 n.trees = 100, 
+                 shrinkage = 0.01, 
+                 interaction.depth = 3)
+
+# Plot the model's performance
+# Plot the relative influence of the predictors
+summary(gbm_model)
+
+# Plot the Partial Dependence Plots (PDP) for a specific variable, e.g., "lstat"
+plot(gbm_model, i.var = "lstat")
+
+# Make predictions on the test set
+predictions <- predict(gbm_model, testData, n.trees = 100)
+
+# Evaluate the model (e.g., RMSE)
+rmse <- sqrt(mean((predictions - testData$medv)^2))
+cat("RMSE on test data:", rmse, "\n")
+
