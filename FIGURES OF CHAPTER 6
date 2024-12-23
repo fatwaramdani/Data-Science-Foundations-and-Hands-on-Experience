@@ -378,3 +378,46 @@ predictions <- predict(gbm_model, testData, n.trees = 100)
 rmse <- sqrt(mean((predictions - testData$medv)^2))
 cat("RMSE on test data:", rmse, "\n")
 
+#Figure 6.13 Illustration of GMM.
+# Load required packages
+if (!require("mclust")) install.packages("mclust", dependencies = TRUE)
+library(mclust)
+if (!require("ggplot2")) install.packages("ggplot2", dependencies = TRUE)
+library(ggplot2)
+
+# Generate synthetic data
+set.seed(42)
+n1 <- 200  # Number of points in cluster 1
+n2 <- 200  # Number of points in cluster 2
+n3 <- 200  # Number of points in cluster 3
+
+data <- rbind(
+  cbind(rnorm(n1, mean = 2, sd = 0.8), rnorm(n1, mean = 2, sd = 0.8)),
+  cbind(rnorm(n2, mean = -2, sd = 0.8), rnorm(n2, mean = 2, sd = 0.8)),
+  cbind(rnorm(n3, mean = 0, sd = 0.5), rnorm(n3, mean = -2, sd = 0.5))
+)
+data <- as.data.frame(data)
+colnames(data) <- c("x", "y")
+
+# Fit a Gaussian Mixture Model using mclust
+model <- Mclust(data)
+
+# Extract cluster assignment and probabilities
+data$cluster <- as.factor(model$classification)
+data$probability <- apply(model$z, 1, max)
+
+# Plot the data and GMM contours
+ggplot(data, aes(x = x, y = y)) +
+  geom_point(aes(color = cluster, alpha = probability), size = 2) +
+  scale_color_manual(values = c("#1b9e77", "#d95f02", "#7570b3")) +
+  scale_alpha_continuous(range = c(0.4, 1)) +
+  stat_density_2d(aes(fill = ..level..), geom = "polygon", bins = 15, alpha = 0.3) +
+  scale_fill_viridis_c() +
+  labs(
+    title = "",
+    x = "X-axis",
+    y = "Y-axis",
+    color = "Cluster"
+  ) +
+  theme_minimal(base_size = 20)
+
