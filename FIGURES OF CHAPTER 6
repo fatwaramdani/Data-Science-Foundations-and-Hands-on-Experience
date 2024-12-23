@@ -302,7 +302,7 @@ digraph CNN {
   rankdir=LR;  // Set left-to-right layout
 
   // Define node shapes
-  node [shape=box, style=rounded, fontname=Helvetica, fontsize=10];
+  node [shape=box, style=rounded, fontname=Helvetica, fontsize=40];
 
   // Input layer
   Input [label=\"Input Layer\\n(e.g., 32x32x3)\", shape=box];
@@ -806,7 +806,106 @@ ggplot(data.frame(simulated_means), aes(x = simulated_means)) +
   theme_minimal(base_size = 20)
 
 
-# Figure 6.22 Illustration of the ARIMA plot using synthetic data.
+
+# Figure 6.22 Illustration of moving average, where original data is shown in blue while the forecasting data is shown in red.
+# Load necessary libraries
+library(ggplot2)
+library(zoo)
+
+# Sample data: Random time series data
+set.seed(123)
+data <- data.frame(
+  time = 1:100,
+  value = cumsum(rnorm(100))  # Cumulative sum to simulate random walk
+)
+
+# Calculate Moving Average with a window size of 5
+data$moving_avg <- rollmean(data$value, k = 5, fill = NA)
+
+# Plot original data and moving average
+ggplot(data, aes(x = time)) +
+  geom_line(aes(y = value), color = "blue", size = 1, alpha = 0.7, linetype = "dashed") +
+  geom_line(aes(y = moving_avg), color = "red", size = 1) +
+  labs(title = "",
+       x = "Time",
+       y = "Value") +
+  theme_minimal(base_size = 20) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+
+# Figure 6.23 Illustration of exponential smoothing, where original data is shown in blue while the exponentially smoothed data is shown in red.
+# Load necessary libraries
+library(ggplot2)
+library(zoo)
+
+# Sample data: Random time series data
+set.seed(123)
+data <- data.frame(
+  time = 1:100,
+  value = cumsum(rnorm(100))  # Cumulative sum to simulate random walk
+)
+
+# Apply Exponential Smoothing (Simple Exponential Smoothing)
+alpha <- 0.2  # Smoothing parameter (between 0 and 1)
+data$exp_smooth <- stats::filter(data$value, filter = alpha, method = "recursive", sides = 1)
+
+# Plot original data and exponential smoothing
+ggplot(data, aes(x = time)) +
+  geom_line(aes(y = value), color = "blue", size = 1, alpha = 0.7, linetype = "dashed") +  # Original data
+  geom_line(aes(y = exp_smooth), color = "red", size = 1) +  # Exponentially smoothed data
+  labs(title = "",
+       x = "Time",
+       y = "Value") +
+  theme_minimal(base_size = 20) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+
+# Figure 6.24 Illustration of regression plot for forecasting.
+# Load necessary libraries
+library(ggplot2)
+
+# Generate synthetic data for the illustration
+set.seed(42)
+n <- 100  # number of data points
+x <- 1:n  # predictor variable (e.g., time)
+y <- 3 + 2 * x + rnorm(n, mean = 0, sd = 10)  # response variable with some noise
+
+# Create a data frame
+data <- data.frame(x = x, y = y)
+
+# Fit a linear regression model
+model <- lm(y ~ x, data = data)
+
+# Extract the model summary for statistics
+model_summary <- summary(model)
+intercept <- coef(model)[1]
+slope <- coef(model)[2]
+f_value <- model_summary$fstatistic[1]
+p_value <- model_summary$coefficients[2, 4]  # p-value for the slope
+
+# Make predictions using the model
+data$predicted_y <- predict(model, newdata = data)
+
+# Create the plot
+ggplot(data, aes(x = x)) +
+  geom_point(aes(y = y), color = "blue", alpha = 0.6) +  # Original data points
+  geom_line(aes(y = predicted_y), color = "red", size = 1) +  # Regression line
+  labs(title = "",
+       x = "Predictor (X)",
+       y = "Response (Y)") +
+  annotate("text", x = 20, y = min(data$y), label = "Data Points", color = "blue", size = 5, hjust = 0) +  # Label for blue dots
+  annotate("text", x = 20, y = 100, label = "Regression Line", color = "red", size = 5, hjust = 0) +  # Label for red line
+  annotate("text", x = 60, y = max(data$y), label = paste("Equation: y = ", round(intercept, 2), " + ", round(slope, 2), " * x", sep = ""),
+           color = "black", size = 5) +  # Display the regression equation
+  annotate("text", x = 60, y = max(data$y) - 20, label = paste("F-statistic: ", round(f_value, 2), ", p-value: ", round(p_value, 3), sep = ""),
+           color = "black", size = 5) +  # Display the F-statistic and p-value
+  theme_minimal(base_size = 20) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+# Figure 6.25 Illustration of the ARIMA plot using synthetic data.
 # Load necessary libraries
 if (!require("forecast")) install.packages("forecast", dependencies = TRUE)
 if (!require("ggplot2")) install.packages("ggplot2", dependencies = TRUE)
