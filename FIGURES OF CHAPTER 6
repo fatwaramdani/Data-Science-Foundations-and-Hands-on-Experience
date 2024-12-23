@@ -421,3 +421,214 @@ ggplot(data, aes(x = x, y = y)) +
   ) +
   theme_minimal(base_size = 20)
 
+
+# Load necessary library
+library(ggplot2)
+
+# Set random seed for reproducibility
+set.seed(123)
+
+# Generate synthetic data for three classes
+n <- 50  # Number of points per class
+class1 <- data.frame(x = rnorm(n, mean = 2, sd = 1),
+                     y = rnorm(n, mean = 4, sd = 1),
+                     class = "Class 1")
+class2 <- data.frame(x = rnorm(n, mean = 6, sd = 1),
+                     y = rnorm(n, mean = 2, sd = 1),
+                     class = "Class 2")
+class3 <- data.frame(x = rnorm(n, mean = 8, sd = 1.5),
+                     y = rnorm(n, mean = 6, sd = 1.5),
+                     class = "Class 3")
+
+data <- rbind(class1, class2, class3)
+
+# Calculate mean centers for each class
+centers <- aggregate(. ~ class, data, mean)
+
+# Function to classify a new point based on minimum distance
+classify_point <- function(point, centers) {
+  distances <- apply(centers[, c("x", "y")], 1, function(center) {
+    sqrt(sum((point - center)^2))
+  })
+  centers$class[which.min(distances)]
+}
+
+# Generate a grid of points to classify
+x_seq <- seq(min(data$x) - 1, max(data$x) + 1, length.out = 200)
+y_seq <- seq(min(data$y) - 1, max(data$y) + 1, length.out = 200)
+grid <- expand.grid(x = x_seq, y = y_seq)
+grid$class <- apply(grid, 1, function(row) classify_point(row, centers))
+
+# Plot the data and classification boundaries
+ggplot() +
+  geom_tile(data = grid, aes(x = x, y = y, fill = class), alpha = 0.3) +
+  geom_point(data = data, aes(x = x, y = y, color = class), size = 2) +
+  geom_point(data = centers, aes(x = x, y = y, fill = class), size = 5, shape = 21, color = "black") +
+  labs(title = "", x = "Feature 1", y = "Feature 2") +
+  theme_minimal(base_size = 20) +
+  scale_fill_manual(values = c("Class 1" = "blue", "Class 2" = "green", "Class 3" = "red")) +
+  scale_color_manual(values = c("Class 1" = "blue", "Class 2" = "green", "Class 3" = "red"))
+
+
+#Figure 6.14 The illustration of Minimum Distance algorithm.
+
+# Load necessary library
+library(ggplot2)
+
+# Set random seed for reproducibility
+set.seed(123)
+
+# Generate synthetic data for three classes
+n <- 50  # Number of points per class
+class1 <- data.frame(x = rnorm(n, mean = 2, sd = 1),
+                     y = rnorm(n, mean = 4, sd = 1),
+                     class = "Class 1")
+class2 <- data.frame(x = rnorm(n, mean = 6, sd = 1),
+                     y = rnorm(n, mean = 2, sd = 1),
+                     class = "Class 2")
+class3 <- data.frame(x = rnorm(n, mean = 8, sd = 1.5),
+                     y = rnorm(n, mean = 6, sd = 1.5),
+                     class = "Class 3")
+
+data <- rbind(class1, class2, class3)
+
+# Calculate mean and covariance matrix for each class
+class_stats <- by(data, data$class, function(subset) {
+  list(mean = colMeans(subset[, c("x", "y")]),
+       cov = cov(subset[, c("x", "y")]))
+})
+
+# Function to calculate the likelihood of a point belonging to a class
+likelihood <- function(point, mean_vec, cov_matrix) {
+  d <- length(point)
+  exp(-0.5 * t(point - mean_vec) %*% solve(cov_matrix) %*% (point - mean_vec)) /
+    sqrt((2 * pi)^d * det(cov_matrix))
+}
+
+# Function to classify a point using Maximum Likelihood
+classify_point_mle <- function(point, class_stats) {
+  likelihoods <- sapply(class_stats, function(stats) {
+    likelihood(point, stats$mean, stats$cov)
+  })
+  names(likelihoods)[which.max(likelihoods)]
+}
+
+# Generate a grid of points to classify
+x_seq <- seq(min(data$x) - 1, max(data$x) + 1, length.out = 200)
+y_seq <- seq(min(data$y) - 1, max(data$y) + 1, length.out = 200)
+grid <- expand.grid(x = x_seq, y = y_seq)
+
+grid$class <- apply(grid, 1, function(row) classify_point_mle(as.numeric(row), class_stats))
+
+# Plot the data and classification boundaries
+ggplot() +
+  geom_tile(data = grid, aes(x = x, y = y, fill = class), alpha = 0.3) +
+  geom_point(data = data, aes(x = x, y = y, color = class), size = 2) +
+  labs(title = "", x = "Feature 1", y = "Feature 2") +
+  theme_minimal(base_size = 20) +
+  scale_fill_manual(values = c("Class 1" = "blue", "Class 2" = "green", "Class 3" = "red")) +
+  scale_color_manual(values = c("Class 1" = "blue", "Class 2" = "green", "Class 3" = "red"))
+
+
+#Figure 6.15 The illustration of Maximum Likelihood algorithm.
+# Load necessary libraries
+library(ggplot2)
+library(RColorBrewer)
+
+# Function to calculate the Spectral Angle Mapping (SAM) between two spectra
+spectral_angle_mapping <- function(spectrum1, spectrum2) {
+  # Normalize the spectra
+  spectrum1_norm <- spectrum1 / sqrt(sum(spectrum1^2))
+  spectrum2_norm <- spectrum2 / sqrt(sum(spectrum2^2))
+  
+  # Compute the cosine of the angle
+  cosine_angle <- sum(spectrum1_norm * spectrum2_norm)
+  
+  # Calculate the Spectral Angle
+  angle <- acos(cosine_angle)  # Result in radians
+  
+  return(angle)
+}
+
+# Generate example spectra (e.g., 10 bands)
+set.seed(123)
+n_bands <- 10
+spectrum1 <- runif(n_bands, min = 0, max = 1)
+spectrum2 <- runif(n_bands, min = 0, max = 1)
+
+# Calculate the SAM between spectrum1 and spectrum2
+sam_value <- spectral_angle_mapping(spectrum1, spectrum2)
+
+# Print the result
+cat("Spectral Angle (in radians):", sam_value, "\n")
+
+# Create a plot to visualize the spectra and their SAM
+df <- data.frame(
+  Band = 1:n_bands,
+  Spectrum1 = spectrum1,
+  Spectrum2 = spectrum2
+)
+
+ggplot(df, aes(x = Band)) +
+  geom_line(aes(y = Spectrum1, color = "Spectrum 1"), size = 1.5) +
+  geom_line(aes(y = Spectrum2, color = "Spectrum 2"), size = 1.5) +
+  scale_color_manual(values = c("blue", "red")) +
+  labs(title = paste("Spectral Angle Mapping (SAM):", round(sam_value, 2), "radians"),
+       x = "Band", y = "Reflectance", color = "Spectra") +
+  theme_minimal() +
+  theme(legend.position = "top")
+
+
+
+
+# Figure 6.16 The illustration of SAM algorithm.
+# Load necessary libraries
+library(ggplot2)
+library(reshape2)
+library(scales)
+
+# Create example data for the image spectrum and end-member spectrum
+# Simulate a spectral curve (reflectance for each band)
+bands <- 1:10
+image_spectrum <- c(0.1, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 0.85, 0.6, 0.4)  # Image spectrum
+endmember_spectrum <- c(0.15, 0.25, 0.45, 0.65, 0.75, 0.85, 0.95, 0.9, 0.65, 0.45)  # End-member spectrum
+
+# Calculate spectral angle (SAM) for each band
+# Spectral angle formula: SAM = arccos((sum of (Image Spectrum * End-member Spectrum)) / (norm(Image Spectrum) * norm(End-member Spectrum)))
+
+image_norm <- sqrt(sum(image_spectrum^2))  # Norm of image spectrum
+endmember_norm <- sqrt(sum(endmember_spectrum^2))  # Norm of end-member spectrum
+dot_product <- sum(image_spectrum * endmember_spectrum)  # Dot product of image and end-member spectra
+
+spectral_angle <- acos(dot_product / (image_norm * endmember_norm))  # Spectral angle in radians
+spectral_angle_deg <- spectral_angle * (180 / pi)  # Convert spectral angle to degrees
+
+# Create a data frame for plotting
+data <- data.frame(
+  Band = bands,
+  Image_Spectrum = image_spectrum,
+  Endmember_Spectrum = endmember_spectrum
+)
+
+# Reshape data for ggplot
+data_melted <- melt(data, id.vars = "Band", variable.name = "Spectrum", value.name = "Reflectance")
+
+# Plot the spectra and show the spectral angle
+ggplot(data_melted, aes(x = Band, y = Reflectance, color = Spectrum)) +
+  geom_line(size = 1) +
+  geom_point(aes(shape = Spectrum), size = 4) +
+  scale_color_manual(values = c("blue", "red")) +
+  scale_shape_manual(values = c(16, 17)) +
+  labs(
+    title = paste(""),
+    x = "Spectral Reflectance Curve (Band)",
+    y = "Band Reflectance",
+    caption = "Blue: Image Spectrum, Red: End-member Spectrum"
+  ) +
+  theme_minimal(base_size = 20) +
+  theme(legend.position = "top") +
+  annotate("text", x = 7, y = 0.75, label = paste("SAM: ", round(spectral_angle_deg, 2), "°"), color = "black", size = 5)
+
+
+
+
