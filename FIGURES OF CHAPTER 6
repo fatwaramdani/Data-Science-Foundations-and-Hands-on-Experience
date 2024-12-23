@@ -716,6 +716,91 @@ plot_mlp <- function(layers = c(3, 5, 4, 2), activation_funcs = c("ReLU", "ReLU"
 plot_mlp(layers = c(3, 5, 4, 2), activation_funcs = c("ReLU", "ReLU", "Softmax"))
 
 
+# Figure 6.20 The ROC Curve.
+# Load required libraries
+library(ggplot2)
+
+# Create data for the plot
+fpr <- seq(0, 1, length.out = 100) # False positive rate (X-axis)
+
+# Create curves
+random_classifier <- fpr # Random classifier (diagonal line)
+perfect_classifier <- pmin(fpr + 0.5, 1) # Perfect classifier
+better_classifier <- 0.75 * fpr^0.5 + 0.25 # Better classifier
+good_classifier <- 0.5 * fpr^0.7 + 0.5 * fpr # Good classifier
+worse_classifier <- 0.5 * fpr^1.3 # Worse classifier
+
+# Combine into a data frame
+roc_data <- data.frame(
+  fpr = rep(fpr, 5),
+  tpr = c(random_classifier, perfect_classifier, better_classifier, good_classifier, worse_classifier),
+  classifier = factor(rep(c("Random classifier", "Best classifier", "Better classifier", "Good classifier", "Worse classifier"), each = length(fpr)),
+                      levels = c("Best classifier", "Better classifier", "Good classifier", "Random classifier", "Worse classifier"))
+)
+
+# Create the plot
+ggplot(roc_data, aes(x = fpr, y = tpr, color = classifier, linetype = classifier)) +
+  geom_line(size = 1) +
+  # Customize the dashed red line for the random classifier
+  geom_line(data = roc_data[roc_data$classifier == "Random classifier", ],
+            aes(x = fpr, y = tpr), color = "red", linetype = "dashed", size = 1) +
+  # Customize labels and theme
+  labs(
+    x = "False Positive Rate (1 - Specificity)",
+    y = "True Positive Rate (Sensitivity)",
+    color = "Classifier",
+    linetype = "Classifier",
+    title = ""
+  ) +
+  scale_x_continuous(limits = c(0, 1)) +
+  scale_y_continuous(limits = c(0, 1)) +
+  scale_color_manual(values = c("blue", "green", "orange", "red", "black")) +
+  scale_linetype_manual(values = c("solid", "solid", "solid", "dashed", "solid")) +
+  theme_minimal(base_size = 20)
 
 
+# Figure 6.21 The Monte Carlo uncertainty testing shows the distribution of the sample means from the simulations.
+# Load required library
+library(ggplot2)
 
+# Set parameters for the Monte Carlo simulation
+set.seed(123) # For reproducibility
+n_simulations <- 10000   # Number of simulations
+true_mean <- 50          # True mean of the population
+true_sd <- 10            # True standard deviation of the population
+sample_size <- 30        # Sample size
+
+# Function to perform a single simulation
+simulate <- function(n, mean, sd) {
+  sample <- rnorm(n, mean, sd)  # Generate a random sample
+  sample_mean <- mean(sample)  # Calculate the sample mean
+  return(sample_mean)
+}
+
+# Run Monte Carlo simulations
+simulated_means <- replicate(n_simulations, simulate(sample_size, true_mean, true_sd))
+
+# Calculate uncertainty metrics
+mean_of_means <- mean(simulated_means)
+sd_of_means <- sd(simulated_means)
+lower_ci <- mean_of_means - 1.96 * sd_of_means  # 95% Confidence Interval (Lower Bound)
+upper_ci <- mean_of_means + 1.96 * sd_of_means  # 95% Confidence Interval (Upper Bound)
+
+# Print results
+cat("Mean of simulated means:", mean_of_means, "\n")
+cat("Standard deviation of simulated means:", sd_of_means, "\n")
+cat("95% Confidence Interval:", lower_ci, "to", upper_ci, "\n")
+
+# Plot results
+# Histogram with density overlay
+ggplot(data.frame(simulated_means), aes(x = simulated_means)) +
+  geom_histogram(aes(y = ..density..), bins = 50, color = "black", fill = "skyblue", alpha = 0.7) +
+  geom_density(color = "red", size = 1) +
+  geom_vline(xintercept = mean_of_means, color = "blue", linetype = "dashed", size = 1) +
+  geom_vline(xintercept = c(lower_ci, upper_ci), color = "green", linetype = "dashed", size = 0.8) +
+  labs(
+    title = "",
+    x = "Simulated Means",
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 20)
