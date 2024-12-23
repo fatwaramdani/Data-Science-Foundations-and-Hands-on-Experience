@@ -804,3 +804,63 @@ ggplot(data.frame(simulated_means), aes(x = simulated_means)) +
     y = "Density"
   ) +
   theme_minimal(base_size = 20)
+
+
+# Figure 6.22 Illustration of the ARIMA plot using synthetic data.
+# Load necessary libraries
+if (!require("forecast")) install.packages("forecast", dependencies = TRUE)
+if (!require("ggplot2")) install.packages("ggplot2", dependencies = TRUE)
+library(forecast)
+library(ggplot2)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Generate a sample time series data
+data <- ts(rnorm(100, mean = 10, sd = 2), frequency = 12)
+
+# Fit an ARIMA model to the data
+arima_model <- auto.arima(data)
+
+# Forecast the next 20 periods with 80% and 95% confidence intervals
+forecast_result <- forecast(arima_model, h = 20, level = c(80, 95))
+
+# Convert the forecast object to a data frame for ggplot
+forecast_df <- data.frame(
+  Time = time(forecast_result$mean),
+  Mean = as.numeric(forecast_result$mean),
+  Lo80 = as.numeric(forecast_result$lower[, 1]),
+  Hi80 = as.numeric(forecast_result$upper[, 1]),
+  Lo95 = as.numeric(forecast_result$lower[, 2]),
+  Hi95 = as.numeric(forecast_result$upper[, 2])
+)
+
+# Create the plot
+ggplot() +
+  # Plot the confidence intervals
+  geom_ribbon(data = forecast_df, aes(x = Time, ymin = Lo95, ymax = Hi95, fill = "95% Interval"), 
+              alpha = 0.2, inherit.aes = FALSE) +
+  geom_ribbon(data = forecast_df, aes(x = Time, ymin = Lo80, ymax = Hi80, fill = "80% Interval"), 
+              alpha = 0.4, inherit.aes = FALSE) +
+  # Plot the mean forecast
+  geom_line(data = forecast_df, aes(x = Time, y = Mean, color = "Mean"), size = 1) +
+  # Plot the historical data
+  geom_line(data = data.frame(Time = time(data), Value = as.numeric(data)), 
+            aes(x = Time, y = Value), color = "black", size = 0.8) +
+  # Add labels and title
+  labs(
+    title = "",
+    x = "Time",
+    y = "Value"
+  ) +
+  # Customize the theme
+  theme_minimal(base_size = 20) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16),
+    legend.position = "bottom"
+  ) +
+  # Add a legend for the intervals and mean forecast
+  scale_fill_manual(values = c("95% Interval" = "red", "80% Interval" = "orange")) +
+  scale_color_manual(values = c("Mean" = "blue")) +
+  guides(fill = guide_legend(title = "Confidence Intervals"), 
+         color = guide_legend(title = "Forecast")) 
