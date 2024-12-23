@@ -279,39 +279,29 @@ ggplot() +
   theme_minimal(base_size = 20)
 
 
-# Figure 4.11 illustration of confidence interval and errors. 
-# Load necessary library
+# Figure 4.11 The illustration of confidence interval and errors. 
+# Load necessary libraries
 library(ggplot2)
 
-# Simulate example data
+# Sample data
 set.seed(123)
 data <- data.frame(
-  group = rep(c("A", "B", "C"), each = 30),
-  value = c(
-    rnorm(30, mean = 5, sd = 1),
-    rnorm(30, mean = 7, sd = 1.2),
-    rnorm(30, mean = 6, sd = 0.8)
-  )
+  x = 1:10,
+  y = rnorm(10, mean = 50, sd = 10),
+  se = rnorm(10, mean = 0, sd = 2) # standard error for error bars
 )
 
-# Calculate summary statistics: mean, standard error, confidence intervals
-summary_stats <- data %>%
-  group_by(group) %>%
-  summarise(
-    mean = mean(value),
-    se = sd(value) / sqrt(n()),
-    lower_ci = mean - qt(0.975, df = n() - 1) * se,  # 95% CI lower bound
-    upper_ci = mean + qt(0.975, df = n() - 1) * se   # 95% CI upper bound
-  )
+# Calculate the confidence interval (using 95% CI)
+data$ci_lower <- data$y - 1.96 * data$se
+data$ci_upper <- data$y + 1.96 * data$se
 
-# Create a ggplot object
-ggplot(summary_stats, aes(x = group, y = mean)) +
-  geom_point(size = 3, color = "blue") +  # Mean points
-  geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), 
-                width = 0.2, color = "red") +  # CI error bars
-  labs(
-    title = "Mean with 95% Confidence Intervals",
-    x = "Group",
-    y = "Mean Value"
-  ) +
+# Create the plot with error bars and confidence intervals
+ggplot(data, aes(x = x, y = y)) +
+  geom_point(color = "blue", size = 3) + # scatter plot of y values
+  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0.2, color = "red") + # confidence interval
+  geom_errorbar(aes(ymin = y - se, ymax = y + se), width = 0.2, color = "green") + # standard error bars
+  labs(title = "",
+       x = "X-Axis",
+       y = "Y-Axis") +
   theme_minimal(base_size = 20)
+
