@@ -250,58 +250,43 @@ ggplot() +
 
 
 #Figure 6.10 The KNN decision boundary of synthetic 2D dataset.
-# Load required libraries
+# Load necessary libraries
 library(ggplot2)
-library(class)
-library(caret)
+library(class) # For k-NN
 
-# Generate synthetic 2D dataset
-set.seed(123)
-n <- 200  # Number of points
-x1 <- rbind(matrix(rnorm(n, mean = 2, sd = 1), ncol = 2), 
-            matrix(rnorm(n, mean = -2, sd = 1), ncol = 2))
-y1 <- factor(c(rep(1, n / 2), rep(2, n / 2)))
+# Generate sample data
+set.seed(42)
+n <- 100
+x1 <- rnorm(n)
+x2 <- rnorm(n)
+y <- as.factor(ifelse(x1 + x2 > 0, 1, 0))  # Class labels
 
-data <- data.frame(x1, y1)
-colnames(data) <- c("x", "y", "class")
+# Create a data frame
+data <- data.frame(x1, x2, y)
 
-# Train-test split
-set.seed(123)
-trainIndex <- createDataPartition(data$class, p = 0.8, list = FALSE)
-trainData <- data[trainIndex, ]
-testData <- data[-trainIndex, ]
+# Create a grid of points for the decision boundary
+x1_range <- seq(min(x1) - 1, max(x1) + 1, length.out = 100)
+x2_range <- seq(min(x2) - 1, max(x2) + 1, length.out = 100)
+grid <- expand.grid(x1 = x1_range, x2 = x2_range)
 
-# Define k-NN classifier
-k <- 5  # Number of neighbors
-predictedClass <- knn(train = trainData[, 1:2],
-                      test = testData[, 1:2],
-                      cl = trainData$class,
-                      k = k)
+# Apply the k-NN algorithm for prediction
+k <- 5  # Set k value for k-NN
+predicted_class <- knn(data[, c("x1", "x2")], grid, y, k)
 
-# Create a grid for decision boundary
-x_range <- seq(min(data$x) - 1, max(data$x) + 1, length.out = 100)
-y_range <- seq(min(data$y) - 1, max(data$y) + 1, length.out = 100)
-grid <- expand.grid(x = x_range, y = y_range)
+# Convert the predicted class to a factor
+grid$y <- factor(predicted_class, levels = c(0, 1))
 
-# Predict class for each point in the grid
-grid$predicted <- knn(train = trainData[, 1:2],
-                      test = grid,
-                      cl = trainData$class,
-                      k = k)
-
-# Plot the decision boundary
+# Plot the decision boundary and data points with a legend
 ggplot() +
-  geom_point(data = grid, aes(x = x, y = y, color = predicted), alpha = 0.2) +
-  geom_point(data = trainData, aes(x = x, y = y, shape = class), size = 3) +
-  geom_point(data = testData, aes(x = x, y = y, shape = class), size = 3, color = "black") +
-  labs(title = "",
-       x = "X1",
-       y = "X2",
-       color = "Predicted Class",
-       shape = "True Class") +
+  geom_tile(data = grid, aes(x = x1, y = x2, fill = y), alpha = 0.3) +
+  geom_point(data = data, aes(x = x1, y = x2, color = y), size = 3) +
+  scale_fill_manual(values = c("red", "blue"), labels = c("Class 0", "Class 1")) +
+  scale_color_manual(values = c("red", "blue"), labels = c("Class 0", "Class 1")) +
+  labs(title = paste("k-NN Algorithm with k =", k),
+       x = "x1", y = "x2",
+       fill = "Class", color = "Class") +
   theme_minimal(base_size = 20) +
-  scale_color_manual(values = c("#1b9e77", "#d95f02")) +
-  theme(legend.position = "bottom")
+  theme(legend.position = "right")
 
 
 #Figure 6.11 The the CNN architecture.
