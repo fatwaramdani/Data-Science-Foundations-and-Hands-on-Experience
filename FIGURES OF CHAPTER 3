@@ -506,19 +506,35 @@ data(iris)
 iris_data <- iris[, -5] # Remove the Species column for clustering
 
 # --- Hierarchical Clustering ---
+# Load necessary libraries
+library(ggplot2)
+library(cluster)
+library(factoextra)
+library(ggdendro)
+
+# Use the iris dataset
+data(iris)
+iris_data <- iris[, -5] # Remove the Species column for clustering
+
+# --- Hierarchical Clustering ---
 # Compute distance matrix and hierarchical clustering
 dist_matrix <- dist(iris_data, method = "euclidean")
 hc <- hclust(dist_matrix, method = "ward.D2")
 
-# Cut tree into 3 clusters
+# Cut tree into 3 clusters (optional, as you want to visualize the dendrogram)
 hc_clusters <- cutree(hc, k = 3)
 
-# Visualize Hierarchical Clustering
-fviz_cluster(list(data = iris_data, cluster = hc_clusters), 
-             geom = "point", 
-             ellipse.type = "convex", 
-             show.clust.cent = FALSE, 
-             main = "Hierarchical Clustering")
+# Convert hierarchical clustering to dendrogram format
+dendro_data <- dendro_data(hc)
+
+# Visualize Dendrogram using ggplot
+ggplot(segment(dendro_data)) +
+  geom_segment(aes(x = x, y = y, xend = xend, yend = yend)) +
+  theme_minimal(base_size = 20) +
+  labs(title = "",
+       x = "Samples",
+       y = "Height") +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
 # --- K-Means Clustering ---
 # Perform K-Means with 3 clusters
