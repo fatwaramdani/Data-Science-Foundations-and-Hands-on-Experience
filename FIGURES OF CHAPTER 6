@@ -615,5 +615,107 @@ ggplot(data_melted, aes(x = Band, y = Reflectance, color = Spectrum)) +
   annotate("text", x = 7, y = 0.75, label = paste("SAM: ", round(spectral_angle_deg, 2), "°"), color = "black", size = 5)
 
 
+# Figure 6.17 The illustration of MLP architecture with 4 layers (input, hidden, hidden, output) and ReLU and Softmax activation functions.
+# Load necessary libraries
+library(plotly)
+
+# Define a function to plot MLP architecture with weights, biases, and activation functions
+plot_mlp <- function(layers = c(3, 5, 4, 2), activation_funcs = c("ReLU", "ReLU", "Softmax")) {
+  # Layers input defines number of nodes in each layer
+  # activation_funcs defines the activation functions for each layer
+  
+  # Create a blank plotly plot
+  plot <- plot_ly(type = "scatter", mode = "markers+text", textposition = "top center", showlegend = FALSE)
+  
+  # Set the x and y coordinates for each layer
+  layer_x <- c(1, 2, 3, 4)
+  max_nodes <- max(layers)
+  
+  # Calculate the y positions for nodes in each layer
+  node_y <- lapply(layers, function(layer_size) {
+    seq(from = 1, to = max_nodes, length.out = layer_size)
+  })
+  
+  # Add nodes for each layer
+  for (i in 1:length(layers)) {
+    layer_x_coord <- rep(layer_x[i], layers[i])
+    layer_y_coord <- node_y[[i]]
+    layer_text <- paste("Node", 1:layers[i])
+    
+    plot <- plot %>%
+      add_trace(x = layer_x_coord, y = layer_y_coord, text = layer_text, textfont = list(size = 10), 
+                marker = list(size = 10, color = 'blue'), mode = "markers+text")
+  }
+  
+  # Add connections between layers (weights)
+  for (i in 1:(length(layers)-1)) {
+    for (j in 1:layers[i]) {
+      for (k in 1:layers[i+1]) {
+        plot <- plot %>%
+          add_trace(x = c(layer_x[i], layer_x[i+1]), y = c(node_y[[i]][j], node_y[[i+1]][k]),
+                    type = 'scatter', mode = 'lines', line = list(width = 1, color = 'grey'))
+      }
+    }
+  }
+  
+  # Add labels for weights (connections)
+  for (i in 1:(length(layers)-1)) {
+    for (j in 1:layers[i]) {
+      for (k in 1:layers[i+1]) {
+        weight_label <- paste("w", j, k, sep = "")
+        plot <- plot %>%
+          add_trace(x = (layer_x[i] + layer_x[i+1]) / 2, y = (node_y[[i]][j] + node_y[[i+1]][k]) / 2, 
+                    text = weight_label, textfont = list(size = 8, color = "red"), mode = "text", showlegend = FALSE)
+      }
+    }
+  }
+  
+  # Add biases (bias nodes)
+  bias_y <- max_nodes + 2
+  for (i in 2:length(layers)) {
+    for (j in 1:layers[i]) {
+      bias_label <- paste("b", j, sep = "")
+      plot <- plot %>%
+        add_trace(x = layer_x[i], y = bias_y, text = bias_label, textfont = list(size = 8, color = "green"), 
+                  mode = "text", showlegend = FALSE)
+    }
+  }
+  
+  # Add activation function labels
+  for (i in 2:(length(layers)-1)) {
+    plot <- plot %>%
+      add_trace(x = layer_x[i], y = max_nodes + 3, text = paste("Activation: ", activation_funcs[i-1]), 
+                textfont = list(size = 10, color = "purple"), mode = "text", showlegend = FALSE)
+  }
+  plot <- plot %>%
+    add_trace(x = layer_x[length(layers)], y = max_nodes + 3, text = paste("Activation: ", activation_funcs[length(layers)-1]), 
+              textfont = list(size = 10, color = "purple"), mode = "text", showlegend = FALSE)
+  
+  # Add labels for layers
+  plot <- plot %>%
+    add_trace(x = c(1), y = max_nodes + 1, text = "Input Layer", textfont = list(size = 12, color = "black"), 
+              mode = "text", showlegend = FALSE) %>%
+    add_trace(x = c(2), y = max_nodes + 1, text = "Hidden Layer", textfont = list(size = 12, color = "black"), 
+              mode = "text", showlegend = FALSE) %>%
+    add_trace(x = c(3), y = max_nodes + 1, text = "Hidden Layer", textfont = list(size = 12, color = "black"), 
+              mode = "text", showlegend = FALSE) %>%
+    add_trace(x = c(4), y = max_nodes + 1, text = "Output Layer", textfont = list(size = 12, color = "black"), 
+              mode = "text", showlegend = FALSE)
+  
+  # Customize layout
+  plot <- plot %>%
+    layout(title = "Multi-Layer Perceptron Architecture",
+           xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+           showlegend = FALSE)
+  
+  return(plot)
+}
+
+# Plot MLP with 4 layers (input, hidden, hidden, output) and ReLU and Softmax activation functions
+plot_mlp(layers = c(3, 5, 4, 2), activation_funcs = c("ReLU", "ReLU", "Softmax"))
+
+
+
 
 
