@@ -27,3 +27,67 @@ ggplot(r_df, aes(x=x, y=y, fill=value)) +
   ggtitle("") +
   coord_fixed(ratio = 1)  # Fix aspect ratio to make pixels square
 
+
+#Figure 7.2 Point of spatial data.
+library(sf)
+library(ggplot2)
+
+# Create a point with coordinates (longitude, latitude) and convert to sf
+point <- st_sf(geometry = st_sfc(st_point(c(139.6917, 35.6895)), crs = 4326))
+
+# Extract coordinates for labeling
+point$label <- paste("x:", st_coordinates(point)[1], "\ny:", st_coordinates(point)[2])
+
+# Plot the point using ggplot2
+ggplot(data = point) +
+  geom_sf(size = 3, color = "red") +  # Plot the point with styling
+  geom_text(aes(x = st_coordinates(point)[1], 
+                y = st_coordinates(point)[2], 
+                label = label), 
+            vjust = -1, hjust = 1, size = 3) +  # Add coordinates as text
+  theme_minimal(base_size = 20) +
+  labs(title = "Point Location (Longitude, Latitude)",
+       subtitle = "Tokyo",
+       caption = "Source: Your Data") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = "none") +
+  xlab("Longitude") + 
+  ylab("Latitude")
+
+
+#Figure 7.3 Line of spatial data.
+
+
+
+
+
+#Figure 7.4 Polygon of spatial data.
+library(ggplot2)
+library(sf)
+
+# Define the coordinates of the polygon points
+coords <- data.frame(
+  longitude = c(139.6917, 139.6950, 139.6970, 139.6980, 139.6917),
+  latitude = c(35.6895, 35.6920, 35.6900, 35.6880, 35.6895)
+)
+
+# Offset values to move text labels outside the polygon
+offset <- 0.0001  # Adjust this value for more/less offset
+coords$longitude_offset <- coords$longitude + offset * sign(coords$longitude - mean(coords$longitude))
+coords$latitude_offset <- coords$latitude + offset * sign(coords$latitude - mean(coords$latitude))
+
+# Create a polygon geometry
+polygon <- st_sfc(st_polygon(list(cbind(coords$longitude, coords$latitude))), crs = 4326)
+polygon_sf <- st_as_sf(polygon)
+
+# Plot the polygon and add text labels outside the polygon
+ggplot() +
+  geom_sf(data = polygon_sf, fill = "lightblue", color = "blue") +
+  geom_text(data = coords, aes(x = longitude_offset, y = latitude_offset, 
+                               label = paste0("(", longitude, ", ", latitude, ")")), 
+            color = "black", size = 3, hjust = 0.5, vjust = 0.5) +
+  labs(title = "",
+       x = "Longitude",
+       y = "Latitude",
+       caption = "Source: Your Data") +
+  theme_minimal(base_size = 20)
