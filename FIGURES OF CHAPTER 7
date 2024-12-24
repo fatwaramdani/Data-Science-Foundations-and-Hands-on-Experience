@@ -28,9 +28,7 @@ ggplot(r_df, aes(x=x, y=y, fill=value)) +
   coord_fixed(ratio = 1)  # Fix aspect ratio to make pixels square
 
 
-#Figure 7.2 Point of spatial data.
-library(sf)
-library(ggplot2)
+#Figure 7.2 Representation of point of spatial data.
 
 # Create a point with coordinates (longitude, latitude) and convert to sf
 point <- st_sf(geometry = st_sfc(st_point(c(139.6917, 35.6895)), crs = 4326))
@@ -44,7 +42,7 @@ ggplot(data = point) +
   geom_text(aes(x = st_coordinates(point)[1], 
                 y = st_coordinates(point)[2], 
                 label = label), 
-            vjust = -1, hjust = 1, size = 3) +  # Add coordinates as text
+            vjust = -1, hjust = 1, size = 5) +  # Add coordinates as text
   theme_minimal(base_size = 20) +
   labs(title = "Point Location (Longitude, Latitude)",
        subtitle = "Tokyo",
@@ -55,15 +53,80 @@ ggplot(data = point) +
   ylab("Latitude")
 
 
-#Figure 7.3 Line of spatial data.
+#Figure 7.3 Representation of line of spatial data.
+# Create a line by connecting two points (longitude, latitude)
+line <- st_sfc(st_linestring(matrix(c(139.69, 35.68, 139.70, 35.70), ncol = 2, byrow = TRUE)), crs = 4326)
+
+# Convert the line to a data frame for ggplot
+line_df <- as.data.frame(st_coordinates(line))
+colnames(line_df) <- c("longitude", "latitude")
+
+# Create a plot using ggplot2
+ggplot() +
+  geom_line(data = line_df, aes(x = longitude, y = latitude), color = "blue") +
+  labs(x = "Longitude", y = "Latitude", title = "Line Connecting Two Points", caption = "Source: Your Data") +
+  theme_minimal() +
+  theme(legend.position = "none")  # Remove legend since it's not needed for a simple line
+
+# Create a line by connecting two points (longitude, latitude)
+coords <- data.frame(
+  longitude = c(139.69, 139.70),
+  latitude = c(35.68, 35.70)
+)
+
+# Adjust text position closer to the points
+coords$text_longitude <- coords$longitude + 0.001   # Shift left (adjust as needed)
+coords$text_latitude <- coords$latitude - 0.0001     # Shift down (adjust as needed)
+
+# Create a plot
+ggplot() +
+  # Add line
+  geom_line(data = coords, aes(x = longitude, y = latitude), color = "blue") +
+  # Add points
+  geom_point(data = coords, aes(x = longitude, y = latitude), color = "red", size = 4) +
+  # Add coordinate labels inside the plot
+  geom_text(data = coords, 
+            aes(x = text_longitude, y = text_latitude, 
+                label = paste0("(", round(longitude, 4), ", ", round(latitude, 4), ")")), 
+            size = 4, color = "black") +  # Increase label size
+  labs(
+    x = "Longitude",
+    y = "Latitude",
+    title = "Line Connecting Points Together.",
+    caption = "Source: Your Data"
+  ) +
+  theme_minimal(base_size = 20) +  # Set a global base font size
+  theme(
+    plot.title = element_text(size = 18, face = "bold"),  # Title font size
+    plot.caption = element_text(size = 12),              # Caption font size
+    axis.title = element_text(size = 14),                # Axis titles font size
+    axis.text = element_text(size = 12)                  # Axis text font size
+  )
 
 
 
 
 
-#Figure 7.4 Polygon of spatial data.
+#Figure 7.4 Representation of polygon of spatial data.
 library(ggplot2)
 library(sf)
+
+# Create a polygon by connecting a series of points
+polygon <- st_sfc(st_polygon(list(cbind(c(139.6917, 139.6950, 139.6970, 139.6980, 139.6917), c(35.6895, 35.6920, 35.6900, 35.6880, 35.6895)))), crs = 4326)
+
+# Convert the polygon to a data frame for ggplot
+polygon_df <- st_as_sf(polygon)
+
+# Plot using ggplot2
+ggplot() +
+  geom_sf(data = polygon_df, aes(fill = "Polygon Area"), color = "blue") +
+  scale_fill_manual(values = "lightblue", name = "Legend") +
+  labs(title = "Polygon Plot with Axes and Legend",
+       x = "Longitude",
+       y = "Latitude",
+       caption = "Source: Your Data") +
+  theme_minimal() +
+  theme(legend.position = "topright")
 
 # Define the coordinates of the polygon points
 coords <- data.frame(
@@ -71,23 +134,23 @@ coords <- data.frame(
   latitude = c(35.6895, 35.6920, 35.6900, 35.6880, 35.6895)
 )
 
-# Offset values to move text labels outside the polygon
-offset <- 0.0001  # Adjust this value for more/less offset
-coords$longitude_offset <- coords$longitude + offset * sign(coords$longitude - mean(coords$longitude))
-coords$latitude_offset <- coords$latitude + offset * sign(coords$latitude - mean(coords$latitude))
+# Offset values to move text labels inside the polygon
+offset <- 0.0003  # Adjust for more/less inward movement
+coords$longitude_offset <- coords$longitude - offset * sign(coords$longitude - mean(coords$longitude))
+coords$latitude_offset <- coords$latitude - offset * sign(coords$latitude - mean(coords$latitude))
 
 # Create a polygon geometry
 polygon <- st_sfc(st_polygon(list(cbind(coords$longitude, coords$latitude))), crs = 4326)
 polygon_sf <- st_as_sf(polygon)
 
-# Plot the polygon and add text labels outside the polygon
+# Plot the polygon and add text labels inside the polygon
 ggplot() +
   geom_sf(data = polygon_sf, fill = "lightblue", color = "blue") +
   geom_text(data = coords, aes(x = longitude_offset, y = latitude_offset, 
                                label = paste0("(", longitude, ", ", latitude, ")")), 
-            color = "black", size = 3, hjust = 0.5, vjust = 0.5) +
-  labs(title = "",
+            color = "black", size = 3.5, hjust = 0.5, vjust = 0.5) +
+  labs(title = "Polygon Connecting a Series of Lines",
        x = "Longitude",
        y = "Latitude",
        caption = "Source: Your Data") +
-  theme_minimal(base_size = 20)
+  theme_minimal(base_size = 15)
