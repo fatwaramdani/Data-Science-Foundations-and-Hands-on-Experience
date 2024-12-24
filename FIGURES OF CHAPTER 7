@@ -1,0 +1,25 @@
+
+
+# Figure 7.1 Raster representation of pixels.
+# Install and load necessary packages
+install.packages("raster")
+install.packages("ggplot2")
+library(raster)
+library(ggplot2)
+
+# Create a random raster (a 10x10 grid of pixels with random values)
+nrows <- 10
+ncols <- 10
+r <- raster(matrix(runif(nrows * ncols, min=0, max=1), nrow=nrows))
+
+# Convert the raster object to a data frame for ggplot
+r_df <- as.data.frame(r, xy=TRUE)
+names(r_df) <- c("x", "y", "value")  # Correct column names for ggplot
+
+# Create a plot using ggplot2
+ggplot(r_df, aes(x=x, y=y, fill=value)) +
+  geom_tile() +
+  scale_fill_gradient(low="white", high="black") +
+  theme_minimal(base_size = 20) +
+  theme(axis.text = element_blank(), axis.title = element_blank()) +
+  ggtitle("")
