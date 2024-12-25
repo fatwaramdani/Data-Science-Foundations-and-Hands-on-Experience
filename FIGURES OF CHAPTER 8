@@ -2,6 +2,38 @@
 # CHAPTER 8 #
 ##############
 
+#Figure 8.1 Decision tree of Groceries dataset for classification tasks.
+# Install necessary packages if they are not installed
+if (!require(rpart)) install.packages("rpart", dependencies = TRUE)
+if (!require(rpart.plot)) install.packages("rpart.plot", dependencies = TRUE)
+if (!require(arules)) install.packages("arules", dependencies = TRUE)
+
+# Load libraries
+library(rpart)
+library(rpart.plot)
+library(arules)
+
+# Load the Groceries dataset
+data("Groceries")
+
+# Convert the Groceries dataset to a transactions object
+groceries_trans <- as(Groceries, "transactions")
+
+# Create a data frame from the transactions data
+# Since the decision tree model needs numeric or factor data, 
+# we'll use item frequency as the features for the decision tree.
+item_freq <- itemFrequency(groceries_trans)
+df <- data.frame(item = names(item_freq), freq = item_freq)
+
+# Create a binary target variable for decision tree classification (e.g., if an item appears or not)
+df$target <- ifelse(df$freq > 0.02, 1, 0)  # Target: 1 if the item is frequent, 0 otherwise
+
+# Fit a decision tree model using rpart
+tree_model <- rpart(target ~ freq, data = df, method = "class")
+
+# Plot the decision tree
+rpart.plot(tree_model, main = "Decision Tree for Groceries Dataset")
+
 # Figure 8.1 The illustration of the top 20 most frequent items, distribution of transaction sizes, item frequency (support > 5%), and matrix of the first 100 transactions using the Groceries dataset that is preloaded with the arules package. It contains transactional data for a supermarket.
 # Load required libraries
 library(arules)
@@ -50,6 +82,58 @@ plot(rules[1:10], method = "graph", control = list(type = "items"))
 
 # Plot a matrix of items and transactions
 image(Groceries[1:100], main = "Matrix of First 100 Transactions", xlab = "Items", ylab = "Transactions")
+
+
+#Figure 8.2 Scatterplot of Groceries data, Regression: Actual vs Predicted Frequencies.
+# Install required packages if not already installed
+install.packages("arules")
+install.packages("ggplot2")
+
+# Load the libraries
+library(arules)
+library(ggplot2)
+
+# Load the Groceries dataset
+data("Groceries")
+
+# View the first few rows of the dataset
+summary(Groceries)
+
+# Convert the Groceries transactions to a data frame
+groceries_df <- as(Groceries, "data.frame")
+
+# In a typical grocery dataset, each row represents a transaction.
+# To use regression, we need to summarize the data into a suitable format.
+# Here, we'll sum up the frequency of each item across all transactions.
+groceries_summary <- table(groceries_df$items)
+
+# Convert the table to a data frame
+groceries_summary_df <- as.data.frame(groceries_summary)
+
+# Rename the columns for clarity
+colnames(groceries_summary_df) <- c("Item", "Frequency")
+
+# Let's assume we want to predict 'Frequency' based on the 'Item' (converted to numeric).
+# Since 'Item' is categorical, we'll need to convert it into a factor or numeric form.
+groceries_summary_df$Item_numeric <- as.numeric(factor(groceries_summary_df$Item))
+
+# Build a linear regression model: predict Frequency based on Item (numeric representation)
+model <- lm(Frequency ~ Item_numeric, data = groceries_summary_df)
+
+# View the model summary
+summary(model)
+
+# Create predictions using the model
+groceries_summary_df$Predicted_Frequency <- predict(model, newdata = groceries_summary_df)
+
+# Plot the actual vs predicted values
+ggplot(groceries_summary_df, aes(x = Frequency, y = Predicted_Frequency)) +
+  geom_point(color = "blue") +
+  geom_smooth(method = "lm", color = "red") +
+  labs(title = "",
+       x = "Actual Frequency",
+       y = "Predicted Frequency") +
+  theme_minimal(base_size = 20)
 
 
 
