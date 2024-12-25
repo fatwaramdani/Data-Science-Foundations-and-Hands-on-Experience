@@ -1,1 +1,43 @@
+##############
+# CHAPTER 8 #
+##############
 
+
+#Figure 8.1 The scatterplots, graph visualizations, and rules where the item "whole milk" is on the right-hand side.
+
+# Load necessary libraries
+if (!require("arules")) install.packages("arules")
+library(arules)
+
+# Load the Groceries dataset
+data("Groceries")
+
+# Inspect the dataset
+summary(Groceries)
+inspect(head(Groceries, 5))  # View first 5 transactions
+
+# Generate association rules
+rules <- apriori(Groceries, 
+                 parameter = list(supp = 0.01, conf = 0.5, target = "rules"))
+
+# Inspect the rules
+total_rules <- length(rules)
+cat("Number of rules generated:", total_rules, "\n")
+
+# Show top 10 rules sorted by lift
+inspect(head(sort(rules, by = "lift"), 10))
+
+# Visualize the rules (requires arulesViz package)
+if (!require("arulesViz")) install.packages("arulesViz")
+library(arulesViz)
+
+plot(rules, method = "scatterplot", measure = c("support", "confidence"), shading = "lift")
+plot(rules, method = "graph", control = list(type = "items"))
+
+# Filter rules for specific insights
+# Example: Rules where the item "whole milk" is in the right-hand side
+milk_rules <- subset(rules, rhs %in% "whole milk")
+inspect(head(sort(milk_rules, by = "lift"), 10))
+
+# Save the rules to a CSV file
+write(rules, file = "association_rules.csv", sep = ",", quote = TRUE, row.names = FALSE)
