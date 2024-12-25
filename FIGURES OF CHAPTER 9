@@ -1,3 +1,7 @@
+##############
+# PRACTICE 9 #
+##############
+
 # Figure 9.1 Illustration of the tokenization, where token shown in blue, POS tagging in green, NER in red, and lemma in yellow.
 # Load required libraries
 library(ggplot2)
