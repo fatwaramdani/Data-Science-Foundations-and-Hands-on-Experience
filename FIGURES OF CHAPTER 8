@@ -2,6 +2,56 @@
 # CHAPTER 8 #
 ##############
 
+# Figure 8.1 The illustration of the top 20 most frequent items, distribution of transaction sizes, item frequency (support > 5%), and matrix of the first 100 transactions using the Groceries dataset that is preloaded with the arules package. It contains transactional data for a supermarket.
+# Load required libraries
+library(arules)
+library(arulesViz)
+
+# Load the Groceries dataset
+data("Groceries")
+
+# Check the structure of the dataset
+summary(Groceries)
+
+# Basic information about the dataset
+cat("Number of transactions: ", length(Groceries), "\n")
+cat("Number of items: ", length(itemLabels(Groceries)), "\n")
+
+# Inspecting a few transactions
+inspect(Groceries[1:5])
+
+# Top items by frequency
+itemFrequencyPlot(Groceries, topN = 20, col = "steelblue", 
+                  main = "Top 20 Most Frequent Items", 
+                  ylab = "Proportion", 
+                  xlab = "Items")
+
+# Distribution of transaction sizes
+transaction_sizes <- size(Groceries)
+hist(transaction_sizes, breaks = 20, col = "lightblue", 
+     main = "Distribution of Transaction Sizes", 
+     xlab = "Number of Items per Transaction")
+
+# Summary statistics of transaction sizes
+summary(transaction_sizes)
+
+# Visualize item frequency (word cloud-like plot)
+itemFrequencyPlot(Groceries, support = 0.05, 
+                  col = rainbow(10), 
+                  main = "Item Frequency (Support > 5%)")
+
+# Association rules (basic example for visualization)
+rules <- apriori(Groceries, parameter = list(support = 0.01, confidence = 0.5))
+summary(rules)
+
+# Plot the top 10 rules
+inspect(sort(rules, by = "lift")[1:10])
+plot(rules[1:10], method = "graph", control = list(type = "items"))
+
+# Plot a matrix of items and transactions
+image(Groceries[1:100], main = "Matrix of First 100 Transactions", xlab = "Items", ylab = "Transactions")
+
+
 
 #Figure 8.1 The scatterplots, graph visualizations, and rules where the item "whole milk" is on the right-hand side.
 
