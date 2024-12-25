@@ -294,3 +294,102 @@ inspect(head(sort(validated_rules, by = "lift"), 10))
 yogurt_rules <- subset(validated_rules, lhs %in% "yogurt" | rhs %in% "yogurt")
 cat("\nNumber of rules involving 'yogurt':", length(yogurt_rules), "\n")
 inspect(head(sort(yogurt_rules, by = "confidence"), 5))
+
+
+
+#Figure 8.8 Illustration of time series plot using synthetic data, where the first plot shows basic time series data with red points and blue lines. The second plot includes a smoothed trend line (green colour) to help visualize potential trends.
+# Load necessary libraries
+library(ggplot2)
+library(tidyverse)
+library(lubridate)
+
+# Example: Loading Groceries dataset (replace with your actual data)
+# For the sake of the example, let's simulate a dataset
+set.seed(42)
+date_range <- seq(as.Date("2020-01-01"), as.Date("2023-12-31"), by="days")
+groceries_data <- data.frame(
+  Date = date_range,
+  Sales = abs(rnorm(length(date_range), mean = 50, sd = 10))  # Simulated sales data
+)
+
+# Ensure the Date column is of Date class
+groceries_data$Date <- as.Date(groceries_data$Date)
+
+# Aggregate data by month (you can adjust to weekly, yearly, etc.)
+groceries_monthly <- groceries_data %>%
+  mutate(Month = floor_date(Date, "month")) %>%
+  group_by(Month) %>%
+  summarise(Total_Sales = sum(Sales))
+
+# Plot the time series data with ggplot
+ggplot(groceries_monthly, aes(x = Month, y = Total_Sales)) +
+  geom_line(color = "blue") + 
+  geom_point(color = "red") +
+  labs(title = "Time Series Analysis of Groceries Sales", 
+       x = "Month", 
+       y = "Total Sales") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Optional: Add trend line for predictive analysis
+ggplot(groceries_monthly, aes(x = Month, y = Total_Sales)) +
+  geom_line(color = "blue") + 
+  geom_point(color = "red") +
+  geom_smooth(method = "loess", color = "green", se = FALSE) +  # Adding a trend line
+  labs(title = "", 
+       x = "Month", 
+       y = "Total Sales") +
+  theme_minimal(base_size = 20) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+#Figure 8.9 The forecasting groceries sales (next 12 months) using synthetic data.
+# Load necessary libraries
+library(ggplot2)
+library(tidyverse)
+library(lubridate)
+library(forecast)  # For time series forecasting
+
+# Example: Loading Groceries dataset (replace with your actual data)
+# For the sake of the example, let's simulate a dataset
+set.seed(42)
+date_range <- seq(as.Date("2020-01-01"), as.Date("2023-12-31"), by="days")
+groceries_data <- data.frame(
+  Date = date_range,
+  Sales = abs(rnorm(length(date_range), mean = 50, sd = 10))  # Simulated sales data
+)
+
+# Ensure the Date column is of Date class
+groceries_data$Date <- as.Date(groceries_data$Date)
+
+# Aggregate data by month (you can adjust to weekly, yearly, etc.)
+groceries_monthly <- groceries_data %>%
+  mutate(Month = floor_date(Date, "month")) %>%
+  group_by(Month) %>%
+  summarise(Total_Sales = sum(Sales))
+
+# Convert the data to a time series object
+ts_data <- ts(groceries_monthly$Total_Sales, frequency = 12, start = c(2020, 1))  # Monthly data
+
+# Fit ARIMA model for forecasting
+arima_model <- auto.arima(ts_data)
+
+# Forecast the next 12 months (adjust the forecast horizon as needed)
+forecasted_values <- forecast(arima_model, h = 12)
+
+# Plot the time series data and forecasted values
+ggplot() +
+  geom_line(data = groceries_monthly, aes(x = Month, y = Total_Sales), color = "blue") +
+  geom_point(data = groceries_monthly, aes(x = Month, y = Total_Sales), color = "red") +
+  geom_line(data = as.data.frame(forecasted_values), aes(x = seq(max(groceries_monthly$Month), 
+                                                                 by = "month", length.out = 12), 
+                                                         y = `Point Forecast`), color = "green", linetype = "dashed") +
+  geom_ribbon(data = as.data.frame(forecasted_values), 
+              aes(x = seq(max(groceries_monthly$Month), by = "month", length.out = 12), 
+                  ymin = `Lo 80`, ymax = `Hi 80`), fill = "lightgreen", alpha = 0.5) +
+  labs(title = "", 
+       x = "Month", 
+       y = "Total Sales") +
+  theme_minimal(base_size = 20) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
