@@ -50,3 +50,51 @@ ggplot(df, aes(x = x, y = y)) +
   theme_minimal(base_size = 20) +
   theme(axis.text.y = element_blank(),
         axis.ticks.y = element_blank())
+
+
+# Figure 9.3 Bag-of-Words Matrix of three sentences: "I love data science and machine learning!", "Data science is fascinating and exciting.", and "Learning R is a great way to explore data science."
+# 必要なパッケージをインストール
+if (!require(tm)) install.packages("tm", dependencies = TRUE)
+if (!require(SnowballC)) install.packages("SnowballC", dependencies = TRUE)
+if (!require(slam)) install.packages("slam", dependencies = TRUE)
+
+# パッケージのロード
+library(tm)
+library(SnowballC)
+
+# Step 1: コーパスの作成
+documents <- c(
+  "I love data science and machine learning!",
+  "Data science is fascinating and exciting.",
+  "Learning R is a great way to explore data science."
+)
+
+# Step 2: テキストの前処理
+to_corpus <- Corpus(VectorSource(documents))
+
+to_corpus <- tm_map(to_corpus, content_transformer(tolower))       # 小文字化
+to_corpus <- tm_map(to_corpus, removePunctuation)                 # 句読点の削除
+to_corpus <- tm_map(to_corpus, removeWords, stopwords("english")) # ストップワードの削除
+to_corpus <- tm_map(to_corpus, stemDocument)                      # ステミング
+to_corpus <- tm_map(to_corpus, stripWhitespace)                   # 余分な空白の削除
+
+# Step 3: ドキュメント-ターム行列 (DTM) の作成
+dtm <- DocumentTermMatrix(to_corpus)
+
+# Step 4: Bag-of-Words 表現の表示
+bow_matrix <- as.matrix(dtm)
+cat("\nBag-of-Words Matrix:\n")
+print(bow_matrix)
+
+# Step 5: ワード頻度の計算
+word_freq <- colSums(bow_matrix)
+word_freq <- sort(word_freq, decreasing = TRUE)
+
+cat("\nWord Frequencies:\n")
+print(word_freq)
+
+# Optional: Word Cloud の作成
+if (!require(wordcloud)) install.packages("wordcloud", dependencies = TRUE)
+library(wordcloud)
+
+wordcloud(names(word_freq), freq = word_freq, min.freq = 1, scale = c(3, 0.5), colors = rainbow(8))
