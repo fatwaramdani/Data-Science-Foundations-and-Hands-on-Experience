@@ -1,0 +1,48 @@
+# Figure 9.1 Illustration of the tokenization, where token shown in blue, POS tagging in green, NER in red, and lemma in yellow.
+# Load required libraries
+library(ggplot2)
+library(ggrepel)
+
+# Example sentence and NLP stages
+sentence <- "Sato and Ito went to the University of Tsukuba to study data science techniques in 2025."
+
+# Tokenized words
+tokens <- c("Sato", "and", "Ito", "went", "to", "the", "University", "of", "Tsukuba", 
+            "to", "study", "data", "science", "techniques", "in", "2025")
+
+# POS tags
+pos_tags <- c("NNP", "CC", "NNP", "VBD", "TO", "DT", "NNP", "IN", "NNP", 
+              "TO", "VB", "JJ", "NN", "NNS", "IN", "CD")
+
+# Named Entity Recognition (NER)
+entities <- c("Person", "", "Person", "", "", "", "Organization", "", "Organization", 
+              "", "", "", "Field", "", "", "Date")
+
+# Lemmatization/Stemming (simplified examples)
+lemmas <- c("Sato", "and", "Ito", "go", "to", "the", "University", "of", "Tsukuba", 
+            "to", "study", "data", "science", "technique", "in", "2025")
+
+# Create a data frame
+df <- data.frame(
+  Token = tokens,
+  POS = pos_tags,
+  Entity = entities,
+  Lemma = lemmas,
+  x = 1:length(tokens),
+  y = 1  # y-axis placeholder for visualization
+)
+
+# Main plot with tokens and attributes
+ggplot(df, aes(x = x, y = y)) +
+  geom_text(aes(label = Token), size = 5, color = "blue") +
+  geom_label_repel(aes(label = paste0("POS: ", POS), y = y + 0.5), 
+                   fill = "green", color = "black", size = 4) +
+  geom_label_repel(aes(label = paste0("NER: ", Entity), y = y + 1), 
+                   fill = "red", color = "black", size = 4) +
+  geom_label_repel(aes(label = paste0("Lemma: ", Lemma), y = y - 0.5), 
+                   fill = "yellow", color = "black", size = 4) +
+  labs(title = "",
+       x = "Token Sequence", y = "") +
+  theme_minimal(base_size = 20) +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())
