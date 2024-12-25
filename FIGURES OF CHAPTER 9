@@ -98,3 +98,172 @@ if (!require(wordcloud)) install.packages("wordcloud", dependencies = TRUE)
 library(wordcloud)
 
 wordcloud(names(word_freq), freq = word_freq, min.freq = 1, scale = c(3, 0.5), colors = rainbow(8))
+
+
+#Figure 9.4 TF-IDF scores of the words.
+# Load required libraries
+library(tidytext)
+library(dplyr)
+library(tidyr)
+
+# Input sentences
+sentences <- tibble::tibble(
+  doc_id = c(1, 2, 3),
+  text = c(
+    "I love data science and machine learning!",
+    "Data science is fascinating and exciting.",
+    "Learning R is a great way to explore data science."
+  )
+)
+
+# Tokenize the sentences into words and clean up
+tokenized <- sentences %>%
+  unnest_tokens(word, text) %>%
+  mutate(word = tolower(word)) %>%
+  count(doc_id, word, sort = TRUE)
+
+# Calculate TF-IDF
+tf_idf <- tokenized %>%
+  bind_tf_idf(word, doc_id, n) %>%
+  arrange(desc(tf_idf))
+
+# Display the results
+print("TF-IDF Table:")
+print(tf_idf)
+
+# Optional: Visualize the TF-IDF scores
+library(ggplot2)
+
+tf_idf %>%
+  group_by(word) %>%
+  top_n(1, tf_idf) %>%
+  ungroup() %>%
+  mutate(word = reorder(word, tf_idf)) %>%
+  ggplot(aes(word, tf_idf, fill = factor(doc_id))) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  labs(
+    title = "",
+    x = "Words",
+    y = "TF-IDF Score"
+  )+
+  theme_minimal(base_size = 20)
+
+
+Figure 9.5 Illustration of the word-level relationships that created using Word2Vec and GloVe package.
+# Install and load necessary libraries
+if (!requireNamespace("text2vec", quietly = TRUE)) install.packages("text2vec")
+library(text2vec)
+
+# Example sentences
+sentences <- c(
+  "I love data science and machine learning!",
+  "Data science is fascinating and exciting.",
+  "Learning R is a great way to explore data science."
+)
+
+# Preprocess text: lowercasing, tokenizing, and removing punctuation
+preprocess_text <- function(text) {
+  text <- tolower(text)
+  text <- gsub("[[:punct:]]", "", text)
+  text <- strsplit(text, "\\s+")
+  return(text[[1]])
+}
+
+# Tokenize the sentences
+tokens <- lapply(sentences, preprocess_text)
+
+# Create an iterator over tokens
+it <- itoken(tokens, progressbar = FALSE)
+
+# Create a vocabulary and prune it (remove infrequent terms)
+vocab <- create_vocabulary(it)
+vocab <- prune_vocabulary(vocab, term_count_min = 1)
+
+# Vectorizer
+vectorizer <- vocab_vectorizer(vocab)
+
+# ---------------- Word2Vec Model ----------------
+# Create term co-occurrence matrix
+tcm <- create_tcm(it, vectorizer, skip_grams_window = 5)
+
+# Fit Word2Vec model
+word2vec_model <- GlobalVectors$new(rank = 50, x_max = 10)
+word2vec_embedding <- word2vec_model$fit_transform(tcm)
+
+# Combine main and context embeddings
+word_vectors_word2vec <- word2vec_embedding + t(word2vec_model$components)
+
+# Print Word2Vec embeddings
+print("Word2Vec Embeddings:")
+print(word_vectors_word2vec["data", ])
+
+# ---------------- GloVe Model ----------------
+# Fit GloVe model
+glove_model <- GloVe$new(rank = 50, x_max = 10)
+glove_embedding <- glove_model$fit_transform(tcm)
+
+# Combine main and context embeddings
+word_vectors_glove <- glove_embedding + t(glove_model$components)
+
+# Print GloVe embeddings
+print("GloVe Embeddings:")
+print(word_vectors_glove["data", ])
+
+# Example: Find similar words (cosine similarity)
+library(text2vec)
+similar_words <- function(word, embeddings, top_n = 5) {
+  similarity <- sim2(embeddings, embeddings[word, , drop = FALSE], method = "cosine", norm = "l2")
+  sort(similarity[, 1], decreasing = TRUE)[2:(top_n + 1)]
+}
+
+# Find similar words for "data" using Word2Vec embeddings
+print("Similar words to 'data' (Word2Vec):")
+print(similar_words("data", word_vectors_word2vec))
+
+# Find similar words for "data" using GloVe embeddings
+print("Similar words to 'data' (GloVe):")
+print(similar_words("data", word_vectors_glove))
+
+
+# Figure 9.6 A visualization of the sentiment scores in a bar plot.
+# Install and load the required package
+if (!requireNamespace("sentimentr", quietly = TRUE)) {
+  install.packages("sentimentr")
+}
+library(sentimentr)
+
+# Define the sentences to analyze
+sentences <- c(
+  "I love data science and machine learning!",
+  "Data science is fascinating and exciting.",
+  "Learning R is a great way to explore data science."
+)
+
+# Perform sentiment analysis
+sentiment_results <- sentiment(sentences)
+
+# Print the sentiment scores for each sentence
+print("Sentiment Analysis Results:")
+print(sentiment_results)
+
+# Visualize the sentiment scores
+if (!requireNamespace("ggplot2", quietly = TRUE)) {
+  install.packages("ggplot2")
+}
+library(ggplot2)
+
+# Create a data frame for visualization
+visualization_data <- data.frame(
+  Sentence = sentences,
+  Sentiment_Score = sentiment_results$sentiment
+)
+
+# Plot the sentiment scores
+ggplot(visualization_data, aes(x = Sentence, y = Sentiment_Score, fill = Sentiment_Score)) +
+  geom_bar(stat = "identity", color = "black", show.legend = FALSE) +
+  coord_flip() +
+  labs(title = "",
+       x = "Sentences",
+       y = "Sentiment Score") +
+  theme_minimal(base_size = 20)
