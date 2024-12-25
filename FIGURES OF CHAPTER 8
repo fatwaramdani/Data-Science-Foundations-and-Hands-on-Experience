@@ -2,38 +2,6 @@
 # CHAPTER 8 #
 ##############
 
-#Figure 8.1 Decision tree of Groceries dataset for classification tasks.
-# Install necessary packages if they are not installed
-if (!require(rpart)) install.packages("rpart", dependencies = TRUE)
-if (!require(rpart.plot)) install.packages("rpart.plot", dependencies = TRUE)
-if (!require(arules)) install.packages("arules", dependencies = TRUE)
-
-# Load libraries
-library(rpart)
-library(rpart.plot)
-library(arules)
-
-# Load the Groceries dataset
-data("Groceries")
-
-# Convert the Groceries dataset to a transactions object
-groceries_trans <- as(Groceries, "transactions")
-
-# Create a data frame from the transactions data
-# Since the decision tree model needs numeric or factor data, 
-# we'll use item frequency as the features for the decision tree.
-item_freq <- itemFrequency(groceries_trans)
-df <- data.frame(item = names(item_freq), freq = item_freq)
-
-# Create a binary target variable for decision tree classification (e.g., if an item appears or not)
-df$target <- ifelse(df$freq > 0.02, 1, 0)  # Target: 1 if the item is frequent, 0 otherwise
-
-# Fit a decision tree model using rpart
-tree_model <- rpart(target ~ freq, data = df, method = "class")
-
-# Plot the decision tree
-rpart.plot(tree_model, main = "Decision Tree for Groceries Dataset")
-
 # Figure 8.1 The illustration of the top 20 most frequent items, distribution of transaction sizes, item frequency (support > 5%), and matrix of the first 100 transactions using the Groceries dataset that is preloaded with the arules package. It contains transactional data for a supermarket.
 # Load required libraries
 library(arules)
@@ -83,8 +51,40 @@ plot(rules[1:10], method = "graph", control = list(type = "items"))
 # Plot a matrix of items and transactions
 image(Groceries[1:100], main = "Matrix of First 100 Transactions", xlab = "Items", ylab = "Transactions")
 
+#Figure 8.2 Decision tree of Groceries dataset for classification tasks.
+# Install necessary packages if they are not installed
+if (!require(rpart)) install.packages("rpart", dependencies = TRUE)
+if (!require(rpart.plot)) install.packages("rpart.plot", dependencies = TRUE)
+if (!require(arules)) install.packages("arules", dependencies = TRUE)
 
-#Figure 8.2 Scatterplot of Groceries data, Regression: Actual vs Predicted Frequencies.
+# Load libraries
+library(rpart)
+library(rpart.plot)
+library(arules)
+
+# Load the Groceries dataset
+data("Groceries")
+
+# Convert the Groceries dataset to a transactions object
+groceries_trans <- as(Groceries, "transactions")
+
+# Create a data frame from the transactions data
+# Since the decision tree model needs numeric or factor data, 
+# we'll use item frequency as the features for the decision tree.
+item_freq <- itemFrequency(groceries_trans)
+df <- data.frame(item = names(item_freq), freq = item_freq)
+
+# Create a binary target variable for decision tree classification (e.g., if an item appears or not)
+df$target <- ifelse(df$freq > 0.02, 1, 0)  # Target: 1 if the item is frequent, 0 otherwise
+
+# Fit a decision tree model using rpart
+tree_model <- rpart(target ~ freq, data = df, method = "class")
+
+# Plot the decision tree
+rpart.plot(tree_model, main = "Decision Tree for Groceries Dataset")
+
+
+#Figure 8.3 Scatterplot of Groceries data, Regression: Actual vs Predicted Frequencies.
 # Install required packages if not already installed
 install.packages("arules")
 install.packages("ggplot2")
@@ -135,9 +135,60 @@ ggplot(groceries_summary_df, aes(x = Frequency, y = Predicted_Frequency)) +
        y = "Predicted Frequency") +
   theme_minimal(base_size = 20)
 
+#Figure 8.4 Clustering using K-means and hierarchical clustering (PCA was used to reduce dimensions for better visualization) of Groceries dataset.
+# Load necessary libraries
+library(arules)
+library(ggplot2)
+library(cluster)
+library(factoextra)
+
+# Load Groceries dataset
+data("Groceries")
+
+# Convert the Groceries data into a matrix format for clustering
+groceries_matrix <- as(Groceries, "matrix")
+
+# Step 1: Apply K-means Clustering
+set.seed(123)  # For reproducibility
+kmeans_result <- kmeans(groceries_matrix, centers = 4)  # Assuming 4 clusters
+
+# Step 2: Hierarchical Clustering
+dist_matrix <- dist(groceries_matrix)  # Calculate the distance matrix
+hclust_result <- hclust(dist_matrix)  # Perform hierarchical clustering
+
+# Step 3: Create ggplot for K-means
+# We will reduce dimensions using PCA for better visualization
+pca_result <- prcomp(groceries_matrix, scale. = TRUE)
+pca_data <- data.frame(pca_result$x)
+
+# Add the K-means cluster results to the PCA data
+pca_data$kmeans_cluster <- as.factor(kmeans_result$cluster)
+
+# Plot the K-means clustering result
+ggplot(pca_data, aes(x = PC1, y = PC2, color = kmeans_cluster)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "", x = "Principal Component 1", y = "Principal Component 2") +
+  theme_minimal(base_size = 20)
+
+# Step 4: Create ggplot for Hierarchical Clustering
+# Cut the hierarchical tree into 4 clusters
+hclust_clusters <- cutree(hclust_result, k = 4)
+
+# Add hierarchical clustering result to PCA data
+pca_data$hclust_cluster <- as.factor(hclust_clusters)
+
+# Plot the Hierarchical clustering result
+ggplot(pca_data, aes(x = PC1, y = PC2, color = hclust_cluster)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "", x = "Principal Component 1", y = "Principal Component 2") +
+  theme_minimal(base_size = 20)
+
+# Additional: Visualizing the Dendrogram for hierarchical clustering
+plot(hclust_result, main = "Dendrogram of Groceries Dataset")
 
 
-#Figure 8.1 The scatterplots, graph visualizations, and rules where the item "whole milk" is on the right-hand side.
+
+#Figure 8.5 The scatterplots, graph visualizations, and rules where the item "whole milk" is on the right-hand side.
 
 # Load necessary libraries
 if (!require("arules")) install.packages("arules")
@@ -177,7 +228,7 @@ inspect(head(sort(milk_rules, by = "lift"), 10))
 write(rules, file = "association_rules.csv", sep = ",", quote = TRUE, row.names = FALSE)
 
 
-#Figure 8.2 The rules quality metric and rules with highest support, confidence, and lift for evaluation using the Groce​​ries dataset.
+#Figure 8.6 The rules quality metric and rules with highest support, confidence, and lift for evaluation using the Groce​​ries dataset.
 # Load necessary libraries
 if (!require("arules")) install.packages("arules")
 library(arules)
