@@ -393,3 +393,61 @@ ggplot() +
   theme_minimal(base_size = 20) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+
+#Figure 8.10 Bar plot of top 10 frequent sequential patterns 
+# Load necessary libraries
+library(arules)
+library(arulesSequences)
+library(tidyverse)
+library(lubridate)
+
+# Example: Simulating Groceries transactional data
+set.seed(42)
+customers <- paste0("C", sample(1:1000, 5000, replace = TRUE))  # Customer IDs
+dates <- sample(seq(as.Date("2020-01-01"), as.Date("2023-12-31"), by = "day"), 5000, replace = TRUE)
+products <- sample(c("Milk", "Bread", "Eggs", "Butter", "Cheese", "Apples", "Bananas", "Cereal", "Chicken", "Rice"), 5000, replace = TRUE)
+
+# Create a transactional dataset
+transactions <- data.frame(
+  CustomerID = customers,
+  Date = dates,
+  Product = products
+)
+
+# Sort transactions by CustomerID and Date
+transactions <- transactions %>%
+  arrange(CustomerID, Date)
+
+# Convert to transaction format for sequence mining
+# Group transactions by CustomerID and Date
+seq_data <- transactions %>%
+  group_by(CustomerID, Date) %>%
+  summarise(Products = paste(Product, collapse = ", ")) %>%
+  ungroup()
+
+# Save to a temporary file (required format for arulesSequences)
+write.table(seq_data, file = "seq_data.csv", sep = ",", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+# Read the data into a transaction object for sequence mining
+seq_trans <- read_baskets("seq_data.csv", sep = ",", info = c("sequenceID", "eventID"))
+
+# View the transaction summary
+summary(seq_trans)
+
+# Perform sequence mining using SPADE algorithm
+seq_patterns <- cspade(seq_trans, parameter = list(support = 0.01))  # Adjust support threshold as needed
+
+# Extract discovered patterns
+patterns <- as(seq_patterns, "data.frame")
+print(patterns)
+
+# Visualize frequent patterns (top 10)
+top_patterns <- patterns %>%
+  arrange(desc(support)) %>%
+  head(10)
+
+ggplot(top_patterns, aes(x = reorder(sequence, support), y = support)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  labs(title = "", x = "Sequence", y = "Support") +
+  theme_minimal(base_size = 20)
