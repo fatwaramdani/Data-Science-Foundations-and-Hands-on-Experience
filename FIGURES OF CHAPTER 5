@@ -2,7 +2,7 @@
 # CHAPTER 5 #
 #############
 
-# Figure 5.2 Illustrate a boxplot with the distribution of values in each group, with mean values represented as blue dots and error bars to represent the confidence interval.
+# Figure 5.2 Illustration of a boxplot with the distribution of values in each group, with mean values represented as blue dots and error bars to represent the confidence interval.
 # Load necessary libraries
 library(ggplot2)
 library(dplyr)
@@ -39,7 +39,7 @@ ggplot() +
   ) +
   theme_minimal(base_size = 20)
 
-#Figure 5.3 Illustrate the visual encoding channels.
+#Figure 5.3 Illustration of the visual encoding channels.
 # Load necessary libraries
 library(ggplot2)
 library(dplyr)
@@ -71,7 +71,7 @@ ggplot(data, aes(x = x, y = y)) +
   theme(legend.position = "bottom")
 
 
-# Figure 5.4 Illustrate the hybrid approaches, combining graphical annotations and visual encodings, providing a clear representation of uncertainty and confidence intervals in the data.
+# Figure 5.4 Illustration of the hybrid approaches, combining graphical annotations and visual encodings, providing a clear representation of uncertainty and confidence intervals in the data.
 # Load necessary libraries
 library(ggplot2)
 library(dplyr)
@@ -113,6 +113,53 @@ ggplot(summary_data, aes(x = x, y = mean_y, group = group, color = group)) +
   ) +
   theme_minimal(base_size = 15) +
   theme(legend.position = "top")
+
+#Figure 5.5 Hypothetical Outcome Plots (HOPs). For animation, the GIF file is available here https://x.gd/wONoc 
+library(ggplot2)
+library(gganimate)
+library(dplyr)
+library(tidyr)
+
+# Set seed for reproducibility
+set.seed(42)
+
+# Parameters for the simulation
+n_simulations <- 100  # Number of hypothetical outcomes
+data_per_sim <- 50    # Number of data points per simulation
+group_means <- c(5, 7)  # Means for two groups
+group_sds <- c(2, 3)    # Standard deviations for two groups
+
+group_labels <- c("Group A", "Group B")
+
+# Simulate data for each hypothetical outcome
+simulated_data <- expand.grid(Simulation = 1:n_simulations, 
+                              Group = group_labels) %>%
+  rowwise() %>%
+  mutate(Data = list(rnorm(data_per_sim, 
+                           mean = if_else(Group == "Group A", group_means[1], group_means[2]), 
+                           sd = if_else(Group == "Group A", group_sds[1], group_sds[2])))) %>%
+  unnest(Data)
+
+# Create a base plot
+plot <- ggplot(simulated_data, aes(x = Group, y = Data, color = Group)) +
+  geom_jitter(width = 0.2, alpha = 0.6, size = 2) +
+  stat_summary(fun = mean, geom = "point", size = 4, shape = 23, fill = "white") +
+  labs(title = "Hypothetical Outcome Plot (HOP)",
+       subtitle = "Simulation {closest_state} of {n_simulations}",
+       x = "Group",
+       y = "Values",
+       color = "Group") +
+  theme_minimal(base_size = 15) +
+  theme(legend.position = "top") +
+  transition_states(Simulation, transition_length = 2, state_length = 1, wrap = TRUE) +
+  ease_aes('sine-in-out')
+
+# Animate the plot
+animated_plot <- animate(plot, nframes = 200, fps = 20, width = 800, height = 600)
+
+# Save the animation
+anim_save("HOP_animation.gif", animation = animated_plot)
+
 
 
 # Figure 5.5 1D representations with variations of data and uncertain data points.
@@ -156,95 +203,75 @@ grid.arrange(boxplot_error, markers_uncertainty, ncol = 2)
 
 # Figure 5.6 Rangefinder boxplot, 2D boxplot, bagplot, and quel and rel plot.
 # Load required libraries
-library(MASS)  # For generating bivariate normal data
-library(ggplot2)  # For advanced plotting
+library(MASS)      # For generating bivariate normal data
+library(ggplot2)   # For advanced plotting
+library(ggforce)   # For bagplot-like visualization using geom_mark_hull
 
 # Generate sample bivariate data
 set.seed(123)
-data <- mvrnorm(n = 200, mu = c(0, 0), Sigma = matrix(c(1, 0.8, 0.8, 1), 2, 2))
+data <- as.data.frame(mvrnorm(n = 200, mu = c(0, 0), Sigma = matrix(c(1, 0.8, 0.8, 1), 2, 2)))
+colnames(data) <- c("X", "Y")
 
-# Define a function to create Rangefinder Boxplot
+# Function to create Rangefinder Boxplot
 rangefinder_boxplot <- function(data) {
-  # Find median and IQR
-  median_x <- median(data[,1])
-  median_y <- median(data[,2])
-  q1_x <- quantile(data[,1], 0.25)
-  q3_x <- quantile(data[,1], 0.75)
-  q1_y <- quantile(data[,2], 0.25)
-  q3_y <- quantile(data[,2], 0.75)
+  median_x <- median(data$X)
+  median_y <- median(data$Y)
+  iqr_x <- IQR(data$X)
+  iqr_y <- IQR(data$Y)
   
-  # Plot the data points
-  plot(data, pch = 20, col = rgb(0, 0, 0, 0.3), main = "Rangefinder Boxplot", xlab = "X", ylab = "Y")
-  
-  # Add the cross lines (median and IQR ranges)
-  abline(h = median_y, col = "red", lwd = 2)
-  abline(v = median_x, col = "red", lwd = 2)
-  
-  # Draw interquartile range lines
-  lines(c(q1_x, q3_x), rep(median_y, 2), col = "blue", lwd = 2)
-  lines(c(q1_x, q3_x), rep(median_y + (q3_y - q1_y), 2), col = "blue", lwd = 2)
-  lines(c(q1_x, q3_x), rep(median_y - (q3_y - q1_y), 2), col = "blue", lwd = 2)
+  ggplot(data, aes(x = X, y = Y)) +
+    geom_point(alpha = 0.3) +
+    geom_vline(xintercept = median_x, color = "red", linetype = "dashed", size = 1) +
+    geom_hline(yintercept = median_y, color = "red", linetype = "dashed", size = 1) +
+    annotate("rect", xmin = median_x - iqr_x, xmax = median_x + iqr_x,
+             ymin = median_y - iqr_y, ymax = median_y + iqr_y, 
+             fill = "blue", alpha = 0.2) +
+    labs(title = "Rangefinder Boxplot", x = "X", y = "Y") +
+    theme_minimal(base_size = 20)
 }
 
-# Define a function to create 2D Boxplot
+# Function to create 2D Boxplot
 two_d_boxplot <- function(data) {
-  # Find median and IQR
-  median_x <- median(data[,1])
-  median_y <- median(data[,2])
-  q1_x <- quantile(data[,1], 0.25)
-  q3_x <- quantile(data[,1], 0.75)
-  q1_y <- quantile(data[,2], 0.25)
-  q3_y <- quantile(data[,2], 0.75)
-  
-  # Plot the data points
-  plot(data, pch = 20, col = rgb(0, 0, 0, 0.3), main = "2D Boxplot", xlab = "X", ylab = "Y")
-  
-  # Add the median and quartiles
-  points(median_x, median_y, col = "red", pch = 19)
-  rect(min(data[,1]), q1_y, max(data[,1]), q3_y, col = rgb(0, 0, 1, 0.2), border = "blue")
-  rect(min(data[,1]), q1_y, max(data[,1]), q3_y, col = rgb(1, 0, 0, 0.2), border = "red")
+  ggplot(data, aes(x = X, y = Y)) +
+    geom_point(alpha = 0.3) +
+    stat_boxplot(geom = "errorbar", width = 0.2) +
+    stat_summary(fun = median, geom = "point", color = "red", size = 3) +
+    labs(title = "2D Boxplot", x = "X", y = "Y") +
+    theme_minimal(base_size = 20)
 }
 
-# Define a function to create Bagplot
+# Function to create Bagplot
 bagplot <- function(data) {
-  # Plot the data points
-  plot(data, pch = 20, col = rgb(0, 0, 0, 0.3), main = "Bagplot", xlab = "X", ylab = "Y")
+  hull_points <- data[chull(data), ]
   
-  # Calculate the convex hull
-  hull <- chull(data)
-  polygon(data[hull,], col = "grey", border = "black")
-  
-  # Add the fence (loop) and bag
-  bag_x <- c(quantile(data[,1], 0.25), quantile(data[,1], 0.75))
-  bag_y <- c(quantile(data[,2], 0.25), quantile(data[,2], 0.75))
-  rect(min(data[,1]), min(data[,2]), max(data[,1]), max(data[,2]), col = "darkgrey", border = "black")
+  ggplot(data, aes(x = X, y = Y)) +
+    geom_point(alpha = 0.3) +
+    geom_polygon(data = hull_points, aes(x = X, y = Y), fill = "grey", alpha = 0.4) +
+    labs(title = "Bagplot", x = "X", y = "Y") +
+    theme_minimal(base_size = 20)
 }
 
-# Define a function to create Quel and Rel Plot
+# Function to create Quel and Rel Plot
 quel_rel_plot <- function(data) {
-  # Find the quantiles and medians
-  median_x <- median(data[,1])
-  median_y <- median(data[,2])
-  q1_x <- quantile(data[,1], 0.25)
-  q3_x <- quantile(data[,1], 0.75)
-  q1_y <- quantile(data[,2], 0.25)
-  q3_y <- quantile(data[,2], 0.75)
-  
-  # Plot the data points
-  plot(data, pch = 20, col = rgb(0, 0, 0, 0.3), main = "Quel and Rel Plot", xlab = "X", ylab = "Y")
-  
-  # Add the center point and interior hinge (50% of the data)
-  points(median_x, median_y, col = "red", pch = 19)
-  rect(min(data[,1]), q1_y, max(data[,1]), q3_y, col = rgb(0, 0, 1, 0.2), border = "blue")
+  ggplot(data, aes(x = X, y = Y)) +
+    geom_point(alpha = 0.3) +
+    geom_rect(aes(xmin = quantile(data$X, 0.25), xmax = quantile(data$X, 0.75),
+                  ymin = quantile(data$Y, 0.25), ymax = quantile(data$Y, 0.75)),
+              fill = "blue", alpha = 0.2, inherit.aes = FALSE) +
+    geom_point(aes(x = median(X), y = median(Y)), color = "red", size = 3) +
+    labs(title = "Quel and Rel Plot", x = "X", y = "Y") +
+    theme_minimal(base_size = 20)
 }
 
-# Create all four bivariate boxplots
-par(mfrow = c(2, 2))  # Arrange plots in a 2x2 grid
+# Generate all plots
+rangefinder_plot <- rangefinder_boxplot(data)
+two_d_plot <- two_d_boxplot(data)
+bag_plot <- bagplot(data)
+quel_rel_plot <- quel_rel_plot(data)
 
-rangefinder_boxplot(data)
-two_d_boxplot(data)
-bagplot(data)
-quel_rel_plot(data)
+# Arrange plots in a 2x2 grid
+library(patchwork)
+(rangefinder_plot | two_d_plot) / (bag_plot | quel_rel_plot)
 
 # Figure 5.7 3D and 4D representations.
 # Load necessary libraries
