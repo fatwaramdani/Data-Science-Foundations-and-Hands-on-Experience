@@ -46,7 +46,7 @@ print(bad_plot)
 
 
 
-# Figure 5.2 Illustration of a boxplot with the distribution of values in each group, with mean values represented as blue dots and error bars to represent the confidence interval.
+# Figure 5.3 Illustration of a boxplot with the distribution of values in each group, with mean values represented as blue dots and error bars to represent the confidence interval.
 # Load necessary libraries
 library(ggplot2)
 library(dplyr)
@@ -83,7 +83,7 @@ ggplot() +
   ) +
   theme_minimal(base_size = 20)
 
-#Figure 5.3 Illustration of the visual encoding channels.
+#Figure 5.4 Illustration of the visual encoding channels.
 # Load necessary libraries
 library(ggplot2)
 library(dplyr)
@@ -115,7 +115,7 @@ ggplot(data, aes(x = x, y = y)) +
   theme(legend.position = "bottom")
 
 
-# Figure 5.4 Illustration of the hybrid approaches, combining graphical annotations and visual encodings, providing a clear representation of uncertainty and confidence intervals in the data.
+# Figure 5.5 Illustration of the hybrid approaches, combining graphical annotations and visual encodings, providing a clear representation of uncertainty and confidence intervals in the data.
 # Load necessary libraries
 library(ggplot2)
 library(dplyr)
@@ -158,7 +158,7 @@ ggplot(summary_data, aes(x = x, y = mean_y, group = group, color = group)) +
   theme_minimal(base_size = 15) +
   theme(legend.position = "top")
 
-#Figure 5.5 Hypothetical Outcome Plots (HOPs). For animation, the GIF file is available here https://x.gd/wONoc 
+#Figure 5.6 Hypothetical Outcome Plots (HOPs). For animation, the GIF file is available here https://x.gd/wONoc 
 library(ggplot2)
 library(gganimate)
 library(dplyr)
@@ -206,7 +206,7 @@ anim_save("HOP_animation.gif", animation = animated_plot)
 
 
 
-# Figure 5.5 1D representations with variations of data and uncertain data points.
+# Figure 5.7 1D representations with variations of data and uncertain data points.
 # Load required libraries
 library(ggplot2)
 library(dplyr)
@@ -245,7 +245,7 @@ markers_uncertainty <- ggplot(data, aes(x = group, y = value)) +
 library(gridExtra)
 grid.arrange(boxplot_error, markers_uncertainty, ncol = 2)
 
-# Figure 5.6 Rangefinder boxplot, 2D boxplot, bagplot, and quel and rel plot.
+# Figure 5.8 Rangefinder boxplot, 2D boxplot, bagplot, and quel and rel plot.
 # Load required libraries
 library(MASS)      # For generating bivariate normal data
 library(ggplot2)   # For advanced plotting
@@ -317,7 +317,7 @@ quel_rel_plot <- quel_rel_plot(data)
 library(patchwork)
 (rangefinder_plot | two_d_plot) / (bag_plot | quel_rel_plot)
 
-# Figure 5.7 3D and 4D representations.
+# Figure 5.9 3D and 4D representations.
 # Load necessary libraries
 library(rgl)  # For 3D plotting
 library(ggplot2)  # For additional 2D/3D visualization
@@ -417,7 +417,7 @@ plot_ly(x=x, y=y, z=z, type='scatter3d', mode='markers', marker=list(size=5, col
   layout(title="4D Data Visualization (Time as 4th Dimension)", scene=list(xaxis=list(title="X"), yaxis=list(title="Y"), zaxis=list(title="Z")))
 
 
-# Figure 5.8 Forecast with uncertainty intervals.
+# Figure 5.10 Forecast with uncertainty intervals.
 
 library(ggplot2)
 library(dplyr)
@@ -445,7 +445,7 @@ ggplot() +
   labs(title = "", x = "Time", y = "Value")+
   theme_minimal(base_size = 20)
 
-#Figure 5.9 Spreadsheet of Uncertainty (showing numbers) of Figure 5.8.
+#Figure 5.11 Spreadsheet of Uncertainty (showing numbers) of Figure 5.8.
 # -------------------------------------------
 # 2. Spreadsheet of Uncertainty (showing numbers)
 # Create a table of the forecast uncertainty
@@ -462,7 +462,7 @@ print(forecast_table)
 # Print only the last ten rows of the forecast table
 print(tail(forecast_table, 10))
 
-#Figure 5. 10 Basic summary statistics of the uncertainty (forecast intervals) of Figure 5.8.
+#Figure 5. 12 Basic summary statistics of the uncertainty (forecast intervals) of Figure 5.8.
 # -------------------------------------------
 # 3. Statistic Summary of Uncertainty
 # Basic summary statistics of the uncertainty (forecast intervals)
@@ -477,7 +477,7 @@ summary_stats <- data.frame(
 # Print summary statistics
 print(summary_stats)
 
-#Figure 5.11 Representations involving hue, value and transparency, in addition with resolution, fuzziness, and blurring. 
+#Figure 5.13 Representations involving hue, value and transparency, in addition with resolution, fuzziness, and blurring. 
 library(ggplot2)
 library(scales)
 library(ggfx) # For blurring effects
@@ -526,7 +526,7 @@ print(plot)
 
 
 
-#Figure 5.12  Variable and uncertainty is shown side-by-side.
+#Figure 5.14  Variable and uncertainty is shown side-by-side.
 # Load necessary libraries
 library(ggplot2)
 library(gridExtra) # To arrange plots side-by-side
