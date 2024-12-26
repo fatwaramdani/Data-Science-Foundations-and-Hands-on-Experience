@@ -2,6 +2,50 @@
 # CHAPTER 5 #
 #############
 
+#Figure 5.1 The example of bad data visualization. Where distorted Y-axis exaggerates the differences, red and bright green clash visually, bright yellow background is distracting, misleading title that exaggerates the data, and missing Y axis legend.
+# Load necessary library
+library(ggplot2)
+
+# Create a sample dataset
+set.seed(42)
+data <- data.frame(
+  Category = rep(letters[1:5], each = 5),
+  Value = c(seq(10, 50, by = 10), rnorm(20, mean = 25, sd = 5)),
+  Group = rep(c("X", "Y"), length.out = 25)
+)
+
+# Plot: Example of a poorly designed visualization
+bad_plot <- ggplot(data, aes(x = Category, y = Value, color = Group, shape = Group)) +
+  geom_point(size = 5) +
+  
+  # Distorted Y-axis exaggerates the differences
+  scale_y_continuous(limits = c(20, 30)) +
+  
+  # Confusing shapes and an inappropriate color palette
+  scale_color_manual(values = c("#FF0000", "#00FF00")) + # Red and bright green clash visually
+  scale_shape_manual(values = c(15, 17)) +
+  
+  # Overloaded elements and an overly bold theme
+  theme_minimal(base_size = 20) +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1),
+    panel.background = element_rect(fill = "#FFD700") # Bright yellow background is distracting
+  ) +
+  
+  # Misleading title that exaggerates the data
+  labs(
+    title = "DRAMATIC DIFFERENCES in Values by Category!",
+    x = "Categories",
+    y = "",
+    color = "Group",
+    shape = "Group"
+  )
+
+# Display the bad plot
+print(bad_plot)
+
+
+
 # Figure 5.2 Illustration of a boxplot with the distribution of values in each group, with mean values represented as blue dots and error bars to represent the confidence interval.
 # Load necessary libraries
 library(ggplot2)
