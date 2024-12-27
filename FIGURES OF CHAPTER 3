@@ -60,14 +60,228 @@ outliers_df <- data %>%
   mutate(across(everything(), ~ifelse(. > mean(.) + 2 * sd(.) | . < mean(.) - 2 * sd(.), "Outlier", "Normal"))) %>%
   pivot_longer(cols = everything(), names_to = "Variable", values_to = "Outlier_Status")
 
-# Figure 3.4 The plot of outliers count per variable of the mtcars dataset.
+
+#Figure 3.4 Plot of outliers detection using Z-Score method og mpg variables of mtcars dataset.
+# Load required library
+library(ggplot2)
+
+# Load the mtcars dataset
+data("mtcars")
+
+# Select a variable to analyze (e.g., 'mpg')
+variable <- "mpg"
+
+# Calculate the mean and standard deviation
+mean_value <- mean(mtcars[[variable]])
+std_dev <- sd(mtcars[[variable]])
+
+# Compute the Z-Score for each value
+mtcars$z_score <- (mtcars[[variable]] - mean_value) / std_dev
+
+# Flag the outliers (threshold: Z-Score > |2|)
+outlier_threshold <- 2
+mtcars$is_outlier <- abs(mtcars$z_score) > outlier_threshold
+
+# Plot the data
+ggplot(mtcars, aes_string(x = "rownames(mtcars)", y = variable)) +
+  geom_point(aes(color = is_outlier), size = 3) +  # Color points based on outlier status
+  geom_text(aes(label = ifelse(is_outlier, rownames(mtcars), "")), 
+            hjust = -0.2, vjust = -0.5, size = 3) +  # Add labels for outliers
+  labs(title = paste("Outliers Detection using Z-Score Method (", variable, ")", sep = ""),
+       x = "Car Model", y = variable) +
+  scale_color_manual(values = c("black", "red"), name = "Outlier", 
+                     labels = c("No", "Yes")) +
+  theme_minimal(base_size = 20) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Print the rows flagged as outliers
+outliers <- mtcars[mtcars$is_outlier, ]
+print("Outliers:")
+print(outliers)
+
+#Figure 3.5 Plot of outliers detection using IQR method of mpg variables of mtcars dataset.
+# Load necessary library
+library(ggplot2)
+
+# Load the mtcars dataset
+data(mtcars)
+
+# Calculate the Interquartile Range (IQR) for the mpg variable
+mpg <- mtcars$mpg
+Q1 <- quantile(mpg, 0.25) # First quartile (25th percentile)
+Q3 <- quantile(mpg, 0.75) # Third quartile (75th percentile)
+IQR <- Q3 - Q1            # Interquartile range
+
+# Define the lower and upper bounds for outliers
+lower_bound <- Q1 - 1.5 * IQR
+upper_bound <- Q3 + 1.5 * IQR
+
+# Identify outliers
+outliers <- mpg[mpg < lower_bound | mpg > upper_bound]
+
+# Create a new column in mtcars to label outliers
+mtcars$outlier <- ifelse(mpg < lower_bound | mpg > upper_bound, "Outlier", "Normal")
+
+# Add rownames as a column for labeling
+mtcars$car <- rownames(mtcars)
+
+# Create a scatterplot with custom colors and labels
+ggplot(mtcars, aes(x = car, y = mpg)) +
+  geom_point(aes(color = outlier), size = 3) +  # Points with colors based on "outlier"
+  scale_color_manual(values = c("Normal" = "blue", "Outlier" = "red")) +  # Custom colors
+  geom_hline(yintercept = c(lower_bound, upper_bound), linetype = "dashed", color = "blue") + # IQR bounds
+  geom_text(data = subset(mtcars, outlier == "Outlier"), 
+            aes(label = car), color = "black", hjust = -0.1, vjust = 0.5, size = 4) + # Labels for outliers
+  labs(title = "Scatterplot of mpg with Outliers Highlighted",
+       x = "Car Models",
+       y = "Miles per Gallon (mpg)") +
+  theme_minimal(base_size = 20) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels
+
+
+
+#Figure 3.6 Boxplot of outliers detection using IQR method of mpg variables of mtcars dataset.
+# Load necessary library
+library(ggplot2)
+
+# Load the mtcars dataset
+data(mtcars)
+
+# Calculate the Interquartile Range (IQR) for the mpg variable
+mpg <- mtcars$mpg
+Q1 <- quantile(mpg, 0.25) # First quartile (25th percentile)
+Q3 <- quantile(mpg, 0.75) # Third quartile (75th percentile)
+IQR <- Q3 - Q1            # Interquartile range
+
+# Define the lower and upper bounds for outliers
+lower_bound <- Q1 - 1.5 * IQR
+upper_bound <- Q3 + 1.5 * IQR
+
+# Identify outliers
+outliers <- mpg[mpg < lower_bound | mpg > upper_bound]
+
+# Print outliers
+cat("Outliers in mpg variable:\n", outliers, "\n")
+
+# Create a boxplot to visualize the outliers
+ggplot(mtcars, aes(x = "", y = mpg)) +
+  geom_boxplot(outlier.colour = "red", outlier.size = 5, fill = "skyblue") +
+  geom_text(data = subset(mtcars, mpg %in% outliers),
+            aes(label = rownames(subset(mtcars, mpg %in% outliers)), y = mpg),
+            nudge_x = 0.2, size = 5) +
+  labs(title = "Boxplot of mpg with Outliers Highlighted",
+       y = "Miles per Gallon (mpg)",
+       x = "") +
+  theme_minimal(base_size = 20)
+
+
+#Figure 3.7 Plot of outliers detection using DBSCAN method of mpg variables of mtcars dataset.
+
+# Load necessary libraries
+library(dbscan)
+library(ggplot2)
+
+# Load the mtcars dataset
+data(mtcars)
+
+# Perform DBSCAN clustering with eps = 3 and minPts = 5 (these parameters can be adjusted)
+dbscan_result <- dbscan(mtcars[, c("mpg", "hp")], eps = 3, minPts = 5)
+
+# Add the DBSCAN clustering result to the mtcars dataset
+mtcars$dbscan_cluster <- dbscan_result$cluster
+
+# Create a plot
+ggplot(mtcars, aes(x = mpg, y = hp)) +
+  geom_point(aes(color = as.factor(dbscan_cluster)), size = 3) +  # Normal points
+  scale_color_manual(values = c("black", "blue", "red")) +
+  theme_minimal() +
+  # Highlight outliers in red
+  geom_point(data = subset(mtcars, dbscan_cluster == 0), 
+             aes(x = mpg, y = hp), 
+             color = "red", size = 5) +
+  # Label outliers
+  geom_text(data = subset(mtcars, dbscan_cluster == 0), 
+            aes(x = mpg, y = hp, label = rownames(mtcars)), 
+            color = "red", vjust = -1) +
+  labs(title = "DBSCAN Clustering of mtcars dataset with Outliers in Red",
+       x = "Miles Per Gallon (mpg)",
+       y = "Horsepower (hp)") +
+  theme(legend.position = "none")
+
+
+#Figure 3.8 Plot of outliers detection using Isolation Forest method of mpg and horse power variables of mtcars dataset.
+# Load necessary libraries
+library(randomForest)
+library(ggplot2)
+
+# Load the mtcars dataset
+data(mtcars)
+
+# Apply randomForest to simulate Isolation Forest method
+set.seed(42)
+
+# Fit random forest model
+rf_model <- randomForest(mpg ~ ., data = mtcars, ntree = 100)
+
+# Get the outlier scores (we use the proximity measure)
+outlier_scores <- rf_model$proximity[,1]
+
+# Define outliers (using a threshold on outlier scores)
+threshold <- quantile(outlier_scores, 0.90)  # 95th percentile as threshold
+outliers <- which(outlier_scores >= threshold)
+
+# Prepare the plot
+ggplot(mtcars, aes(x = mpg, y = hp)) +
+  geom_point(aes(color = "Non-Outlier"), size = 3) +
+  geom_point(data = mtcars[outliers, ], aes(x = wt, y = mpg, color = "Outlier"), size = 4) +
+  scale_color_manual(values = c("Non-Outlier" = "black", "Outlier" = "red")) +
+  geom_text(data = mtcars[outliers, ], aes(x = wt, y = mpg, label = rownames(mtcars)[outliers]), 
+            color = "red", hjust = 1.5, vjust = 1.5) +
+  theme_minimal(base_size = 20) +
+  labs(title = "Outlier Detection using Isolation Forest (Simulated)",
+       x = "Miles per Gallon", y = "Horse Power") +
+  theme(legend.position = "none")
+
+
+#Figure 3.9 Plot of outliers detection using LOF method of mpg and horse power variables of mtcars dataset.
+# Load required libraries
+library(DBI)
+library(ggplot2)
+library(Rlof)
+
+# Load the mtcars dataset
+data(mtcars)
+
+# Apply the Local Outlier Factor (LOF) method
+lof_scores <- lof(mtcars, k = 5)  # k is the number of neighbors
+
+# Add LOF scores to the mtcars dataset
+mtcars$lof <- lof_scores
+
+# Identify outliers (threshold for LOF score can be adjusted)
+outliers <- which(mtcars$lof > 1.5)  # LOF score threshold for outliers
+
+# Plotting
+ggplot(mtcars, aes(x = mpg, y = hp)) +
+  geom_point(aes(color = "normal"), size = 3) +  # Plot normal points
+  geom_point(data = mtcars[outliers, ], aes(x = mpg, y = hp), 
+             color = "red", size = 5) +  # Plot outliers in red
+  geom_text(data = mtcars[outliers, ], 
+            aes(x = mpg, y = hp, label = rownames(mtcars)[outliers]), 
+            color = "red", hjust = -0.2) +  # Label outliers
+  labs(title = "Outliers in mtcars Dataset (LOF Method)", 
+       x = "Miles per Gallon (mpg)", y = "Horsepower (hp)") +
+  theme_minimal(base_size = 20) +
+  theme(legend.position = "none")  # Hide legend
+
+# Figure 3.10 The plot of outliers count per variable of the mtcars dataset.
 ggplot(outliers_df, aes(x = Variable, fill = Outlier_Status)) +
   geom_bar(position = "dodge") +
   theme_minimal(base_size = 20) +
   labs(title = "", x = "Variable", y = "Count")
 
 
-# Figure 3.5 Data cleaning, transformation, and standardization.
+# Figure 3.11 Data cleaning, transformation, and standardization.
 # Load necessary libraries
 library(ggplot2)
 library(dplyr)
@@ -142,7 +356,7 @@ combined_plot <- ggarrange(
 # Display the plot
 print(combined_plot)
 
-# Figure 3.6 Clustering for data reduction, where data points grouped into clusters with centroids.
+# Figure 3.12 Clustering for data reduction, where data points grouped into clusters with centroids.
 # # Load necessary libraries
 library(ggplot2)
 
@@ -179,7 +393,7 @@ ggplot(data, aes(x = x1, y = x2, color = cluster)) +
   theme(plot.title = element_text(hjust = 0.5), 
         plot.subtitle = element_text(hjust = 0.5))
 
-# Figure 3.8 Illustration of PCA.
+# Figure 3.14 Illustration of PCA.
 ## Load required libraries
 library(ggplot2)
 library(ggrepel)
@@ -233,7 +447,7 @@ ggplot(pca_data, aes(x = PC1, y = PC2)) +
   theme_minimal(base_size = 20)
 
 
-# Figure 3.9 Illustration of ​​the top terms per topic in the LDA model and document-topic distribution.
+# Figure 3.15 Illustration of ​​the top terms per topic in the LDA model and document-topic distribution.
 # Load required libraries
 library(topicmodels)  # For LDA modeling
 library(ggplot2)      # For visualization
@@ -289,7 +503,7 @@ ggplot(sample_docs, aes(x = as.factor(document), y = gamma, fill = as.factor(top
   scale_fill_brewer(palette = "Set3", name = "Topic")
 
 
-# Figure 3.10 t-SNE plot of iris dataset.
+# Figure 3.16 t-SNE plot of iris dataset.
 # Load libraries
 library(Rtsne)
 library(ggplot2)
@@ -338,7 +552,7 @@ ggplot(plot_data, aes(x = X, y = Y, color = Species)) +
   )
 
 
-# Figure 3.11 Illustration of holdout method.
+# Figure 3.17 Illustration of holdout method.
 # Load required libraries
 library(ggplot2)
 library(caret)
@@ -378,7 +592,7 @@ plot_splits <- function(data, holdout_split) {
 plot_splits(data, holdout_split)
 
 
-# Figure 3.12 Illustration of cross-validation data slit, showing the training data in blue and testing data in red.
+# Figure 3.18 Illustration of cross-validation data slit, showing the training data in blue and testing data in red.
 # Load necessary libraries
 library(ggplot2)
 library(caret)
@@ -412,7 +626,7 @@ ggplot(data) +
   theme(legend.position = "none")
 
 
-# Figure 3.13 LOO-CV plot showing the LOO-CV process with different colors representing each split.
+# Figure 3.19 LOO-CV plot showing the LOO-CV process with different colors representing each split.
 # Load necessary libraries
 library(ggplot2)
 
@@ -457,7 +671,7 @@ ggplot(plot_data, aes(x = x, y = y, color = as.factor(split))) +
   theme_minimal(base_size = 20)
 
 
-# Figure 3.14 Pareto Principle: 80/20 Rule.
+# Figure 3.20 Pareto Principle: 80/20 Rule.
 # Load necessary libraries
 library(ggplot2)
 library(dplyr)
@@ -494,7 +708,7 @@ ggplot(data, aes(x = reorder(Cause, -Effect), y = Effect)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   annotate("text", x = 5, y = 95, label = "80% of the effect", color = "red", size = 5)
 
-#Figure 3.15 Hierarchical clustering, K-Means, and Density-baed clustering using the iris dataset.
+#Figure 3.21 Hierarchical clustering, K-Means, and Density-baed clustering using the iris dataset.
 # Load necessary libraries
 library(ggplot2)
 library(cluster)
@@ -567,7 +781,7 @@ ggplot(iris_dbscan, aes(x = Petal.Length, y = Petal.Width, color = Cluster)) +
   theme_minimal(base_size = 20)
 
 
-#Figure 3.16 Illustration of logistic regression.
+#Figure 3.22 Illustration of logistic regression.
 # Load necessary libraries
 library(ggplot2)
 
