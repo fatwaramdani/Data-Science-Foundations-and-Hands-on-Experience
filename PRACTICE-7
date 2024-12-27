@@ -45,7 +45,7 @@ View(japan_data)
 write.csv(japan_data, "japandata.csv", row.names = FALSE)
 
 ############################
-# Working with Raster Data #
+# Working with Vector Data #
 ############################
 
 # Read the shapefile data
