@@ -59,8 +59,10 @@ if (!all(is_valid)) {
   japan_admin <- st_make_valid(japan_admin)
 }
 
-# Select only the prefecture name column
-japan <- japan_admin %>% select(ADM1_EN)
+library(dplyr)
+
+# Select a column from the sf object
+japan <- japan_admin %>% dplyr::select(ADM1_EN)
 
 # Rename column header
 colnames(japan)[1] <- "ID"
