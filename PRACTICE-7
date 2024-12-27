@@ -211,7 +211,7 @@ library(terra)
 b3 <- rast('2024-05-11-00:00_2024-05-11-23:59_Sentinel-2_L1C_B03.tiff') #Band Green
 b4 <- rast('2024-05-11-00:00_2024-05-11-23:59_Sentinel-2_L1C_B04.tiff') #Band Red
 b6 <- rast('2024-05-11-00:00_2024-05-11-23:59_Sentinel-2_L1C_B06.tiff') #Band Vegetation red edge
-b8 <- rast('2024-05-11-00:00_2024-05-11-23:59_Sentinel-2_L1C_B06.tiff') #Band NIR
+b8 <- rast('2024-05-11-00:00_2024-05-11-23:59_Sentinel-2_L1C_B08.tiff') #Band NIR
 
 # Create a SpatRaster with multiple layers from the existing SpatRaster (single layer) objects.
 sentinel <- c(b3, b4, b6, b8)
