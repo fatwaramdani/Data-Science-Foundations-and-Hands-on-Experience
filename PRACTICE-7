@@ -398,6 +398,9 @@ class_area_ha <- table(values(lulc_sieved)) * prod(res(lulc_sieved)) / 10000
 # Assign class labels
 names(class_area_ha) <- class_labels
 
+# Remove the "NaN" class from calculations
+class_area_ha <- class_area_ha[names(class_area_ha) != "NaN"]
+
 # Convert to a data frame
 total_area <- sum(class_area_ha)
 class_area_df <- data.frame(
