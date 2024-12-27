@@ -393,30 +393,27 @@ ggplot(data, aes(x = x1, y = x2, color = cluster)) +
   theme(plot.title = element_text(hjust = 0.5), 
         plot.subtitle = element_text(hjust = 0.5))
 
-# Figure 3.14 Illustration of PCA.
+# Figure 3.14 Illustration of PCA using iris dataset.
 ## Load required libraries
 library(ggplot2)
 library(ggrepel)
 
-# Generate a simple dataset
-set.seed(42)
-data <- data.frame(
-  x = rnorm(100, mean = 5, sd = 2),
-  y = rnorm(100, mean = 3, sd = 1)
-)
+# Load the iris dataset
+data(iris)
 
-# Perform PCA
-pca_result <- prcomp(data, center = TRUE, scale. = TRUE)
+# Perform PCA on the iris dataset
+pca_result <- prcomp(iris[, 1:4], center = TRUE, scale. = TRUE)
 
 # Extract PCA components
 pca_data <- data.frame(
   PC1 = pca_result$x[, 1],
-  PC2 = pca_result$x[, 2]
+  PC2 = pca_result$x[, 2],
+  Species = iris$Species
 )
 
 # Create a scatter plot of the PCA results
-ggplot(pca_data, aes(x = PC1, y = PC2)) +
-  geom_point(color = "blue", alpha = 0.7) +
+ggplot(pca_data, aes(x = PC1, y = PC2, color = Species)) +
+  geom_point(alpha = 0.7) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
   geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +
   geom_segment(
@@ -440,11 +437,12 @@ ggplot(pca_data, aes(x = PC1, y = PC2)) +
            y = pca_result$rotation[2, 2] * max(pca_data$PC2) * 1.2,
            label = "PC2", color = "green", size = 5) +
   labs(
-    title = "",
+    title = "PCA of Iris Dataset",
     x = "Principal Component 1 (PC1)",
     y = "Principal Component 2 (PC2)"
   ) +
   theme_minimal(base_size = 20)
+
 
 
 # Figure 3.15 Illustration of ​​the top terms per topic in the LDA model and document-topic distribution.
