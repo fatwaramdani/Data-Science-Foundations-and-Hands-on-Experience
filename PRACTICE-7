@@ -486,6 +486,10 @@ roi_sf <- gadm(country = "PSE", level = 1, path = tempdir())
 # Fetch Nighttime Lights Data for 2014 and 2024
 r2014 <- bm_raster(roi_sf = roi_sf, product_id = "VNP46A3", date = "2014-06-01", bearer = bearer)
 r2024 <- bm_raster(roi_sf = roi_sf, product_id = "VNP46A3", date = "2024-06-01", bearer = bearer)
+#if you have the following message, just continue:
+Warning message:
+Failed to open 'https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5000/VNP46A3/2014/153.csv': The requested URL returned error: 404 
+
 
 # Mask and Log-transform Data
 r2014 <- terra::mask(r2014, roi_sf)
