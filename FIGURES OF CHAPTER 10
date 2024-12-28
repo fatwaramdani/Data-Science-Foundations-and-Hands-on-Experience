@@ -25,9 +25,9 @@ ggplot() +
   
   # Add annotations to explain relationships
   annotate("text", x = 4, y = 8, label = "Societal (Social)", size = 8, fontface = "italic") +
-  annotate("text", x = 4, y = 0, label = "Autonomous", size = 8, fontface = "italic") +
-  annotate("text", x = 0, y = 4, label = "Heteronomous", angle = 90, size = 8, fontface = "italic") +
-  annotate("text", x = 8, y = 4, label = "Individual (Human)", angle = 90, size = 8, fontface = "italic") +
+  annotate("text", x = 4, y = 0, label = "Individual (Human)", size = 8, fontface = "italic") +
+  annotate("text", x = 0, y = 4, label = "Autonomous", angle = 90, size = 8, fontface = "italic") +
+  annotate("text", x = 8, y = 4, label = "Heteronomous", angle = 90, size = 8, fontface = "italic") +
   
   # Customize plot appearance
   theme_void() +  # Remove grid and axes
