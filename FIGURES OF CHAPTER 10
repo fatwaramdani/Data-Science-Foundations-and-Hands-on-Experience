@@ -40,4 +40,103 @@ ggplot() +
 
 
 
-#
+#Figure 10.2 Responsibilities of users and those who handle the data. Inspired from “Data Science: How It Works” by Toshikatsu Masui (2022, in Japanese) 
+library(ggplot2)
+library(ggforce)
+library(ggrepel)
+
+# Define positions for users, analysts, and businesses
+data <- data.frame(
+  x = c(1, 3, 5),
+  y = c(1, 3, 1),
+  label = c("Users\n(Data Providers)", 
+            "Analysts\n(Data Handlers)", 
+            "Businesses\n(Data Users)")
+)
+
+# Define arrows for data flow
+arrows <- data.frame(
+  x = c(1, 3),
+  xend = c(3, 5),
+  y = c(1, 3),
+  yend = c(3, 1)
+)
+
+# Create the plot
+ggplot() +
+  # Plot points for users, analysts, and businesses
+  geom_point(data = data, aes(x = x, y = y), size = 5, color = "blue") +
+  geom_text_repel(data = data, aes(x = x, y = y, label = label), 
+                  size = 4, box.padding = 0.5, max.overlaps = Inf) +
+  
+  # Add arrows to represent data flow
+  geom_segment(data = arrows, aes(x = x, xend = xend, y = y, yend = yend), 
+               arrow = arrow(length = unit(0.2, "cm")), size = 1, color = "black") +
+  
+  # Add dashed circle around analysts and businesses
+  geom_circle(aes(x0 = 4, y0 = 2, r = 1.5), 
+              linetype = "dashed", color = "red", size = 1) +
+  
+  # Add text annotations for ethical principles
+  annotate("text", x = 0.5, y = 0.4, label = "Awareness\nand Consent", 
+           color = "darkgreen", size = 4, hjust = 0) +
+  annotate("text", x = 4.5, y = 3.8, label = "Ethical Conduct\n(Privacy, Security, Respect)", 
+           color = "red", size = 4, hjust = 1, fontface = "bold") +
+  
+  # Add a title and adjust theme
+  labs(title = "", 
+       x = NULL, y = NULL) +
+  theme_minimal(base_size = 20) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank()
+  )
+
+
+#Figure 10.3 Balancing between public interest and company profit. Inspired from “Data Science: How It Works” by Toshikatsu Masui (2022, in Japanese) 
+library(ggplot2)
+
+# Data for the scale
+scale_data <- data.frame(
+  x = c(-1, 1),
+  y = c(0, 0),
+  label = c("Public Interest", "Company Profit")
+)
+
+# Data for the responsibilities
+responsibilities <- data.frame(
+  x = c(-1, -1, -1, 1, 1, 1),
+  y = c(1.5, 1, 0.5, 1.5, 1, 0.5),
+  label = c(
+    "Duty of Care", "Ensuring\nSafety", "Care for\nEnvironment",
+    "Confidentiality", "Retention of\nCredit", "Business\nContinuity"
+  )
+)
+
+# Create the plot
+ggplot() +
+  # Add the scale
+  geom_segment(aes(x = -1, y = 0, xend = 1, yend = 0), size = 5, color = "darkgray") +
+  geom_point(data = scale_data, aes(x = x, y = y), size = 10, color = "black") +
+  geom_text(data = scale_data, aes(x = x, y = y - 0.2, label = label), size = 8, fontface = "bold") +
+  
+  # Add responsibilities
+  geom_text(data = responsibilities, aes(x = x, y = y, label = label), size = 8, hjust = ifelse(responsibilities$x == -1, 1, 0), color = "blue") +
+  
+  # Add central principle
+  annotate("text", x = 0, y = -0.5, label = "Protect Public Safety in the Event of Conflict!", size = 10, fontface = "italic", color = "red") +
+  
+  # Add visual balance effect
+  geom_polygon(aes(x = c(-1.2, -1, 1, 1.2), y = c(0, -0.1, -0.1, 0)), fill = "darkgray", alpha = 0.5) +
+  
+  # Customize the plot
+  theme_minimal(base_size = 20) +
+  theme(
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank()
+  ) +
+  labs(title = "")
