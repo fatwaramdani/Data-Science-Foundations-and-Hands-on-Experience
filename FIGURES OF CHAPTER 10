@@ -2,3 +2,42 @@
 # CHAPTER 10 #
 ##############
 
+#Figure 10.1 Relationship between ethics, law, morality, and common sense. Inspired from “Data Science: How It Works” by Toshikatsu Masui (2022, in Japanese) 
+# Load required libraries
+library(ggplot2)
+library(ggforce)
+
+# Create a data frame for the circles
+concepts <- data.frame(
+  x = c(2, 6, 2, 6),          # X-coordinates of circle centers
+  y = c(6, 6, 2, 2),          # Y-coordinates of circle centers
+  radius = c(2, 2, 2, 2),  # Radii of circles
+  label = c("Ethics", "Law", "Morality", "Common Sense")
+)
+
+# Create the plot
+ggplot() +
+  # Add circles for each concept
+  geom_circle(data = concepts, aes(x0 = x, y0 = y, r = radius, fill = label), alpha = 0.3, color = "black") +
+  
+  # Add text labels
+  geom_text(data = concepts, aes(x = x, y = y, label = label), size = 10, fontface = "bold") +
+  
+  # Add annotations to explain relationships
+  annotate("text", x = 4, y = 8, label = "Societal (Social)", size = 8, fontface = "italic") +
+  annotate("text", x = 4, y = 0, label = "Autonomous", size = 8, fontface = "italic") +
+  annotate("text", x = 0, y = 4, label = "Heteronomous", angle = 90, size = 8, fontface = "italic") +
+  annotate("text", x = 8, y = 4, label = "Individual (Human)", angle = 90, size = 8, fontface = "italic") +
+  
+  # Customize plot appearance
+  theme_void() +  # Remove grid and axes
+  scale_fill_manual(values = c("Ethics" = "#FF9999", "Law" = "#9999FF", "Morality" = "#99FF99", "Common Sense" = "#FFD700")) +
+  theme(legend.position = "none") +
+  
+  # Title for the plot
+  ggtitle("") +
+  theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
+
+
+
+#
