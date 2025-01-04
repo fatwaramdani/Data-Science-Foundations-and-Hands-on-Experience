@@ -836,9 +836,9 @@ model_cubic <- lm(y ~ poly(x, 3), data = data)    # Cubic model (overfitting)
 # Create a ggplot
 plot <- ggplot(data, aes(x = x, y = y)) +
   geom_point(color = 'black') +
-  geom_smooth(method = 'lm', formula = y ~ x, color = 'blue', se = FALSE, linetype = "solid") + # Linear model
-  geom_smooth(method = 'lm', formula = y ~ poly(x, 2), color = 'green', se = FALSE, linetype = "dashed") + # Quadratic model
-  geom_smooth(method = 'lm', formula = y ~ poly(x, 3), color = 'red', se = FALSE, linetype = "dotted") + # Cubic model
+  geom_smooth(method = 'lm', formula = y ~ x, color = 'blue', se = FALSE, linetype = "solid", size = 2) + # Linear model
+  geom_smooth(method = 'lm', formula = y ~ poly(x, 2), color = 'green', se = FALSE, linetype = "dashed", size = 2) + # Quadratic model
+  geom_smooth(method = 'lm', formula = y ~ poly(x, 3), color = 'red', se = FALSE, linetype = "dotted", size = 2) + # Cubic model
   theme_minimal() +
   labs(title = "Overfitting and Underfitting Illustration",
        x = "X",
