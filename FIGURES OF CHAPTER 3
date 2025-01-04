@@ -812,3 +812,38 @@ ggplot(data, aes(x = x, y = outcome)) +
   theme_minimal(base_size = 20) +
   theme(plot.title = element_text(hjust = 0.5))
 
+
+
+# Figure 3.23 Illustration of overfitting and underfitting using synthetic data and polynomial regression models. Where the linear model (blue) is expected to underfit, the quadratic model (green) is expected to be a good fit, and the cubic model (red) is expected to overfit.
+# Load necessary libraries
+library(ggplot2)
+library(MASS)
+
+# Generate synthetic data: a quadratic relationship with noise
+set.seed(42)
+n <- 100
+x <- seq(-3, 3, length.out = n)
+y <- 3 * x^2 + rnorm(n, mean = 0, sd = 3)
+
+# Create a data frame for plotting
+data <- data.frame(x = x, y = y)
+
+# Fit models of different degrees
+model_linear <- lm(y ~ x, data = data)        # Linear model
+model_quadratic <- lm(y ~ poly(x, 2), data = data)  # Quadratic model (good fit)
+model_cubic <- lm(y ~ poly(x, 3), data = data)    # Cubic model (overfitting)
+
+# Create a ggplot
+plot <- ggplot(data, aes(x = x, y = y)) +
+  geom_point(color = 'black') +
+  geom_smooth(method = 'lm', formula = y ~ x, color = 'blue', se = FALSE, linetype = "solid") + # Linear model
+  geom_smooth(method = 'lm', formula = y ~ poly(x, 2), color = 'green', se = FALSE, linetype = "dashed") + # Quadratic model
+  geom_smooth(method = 'lm', formula = y ~ poly(x, 3), color = 'red', se = FALSE, linetype = "dotted") + # Cubic model
+  theme_minimal() +
+  labs(title = "Overfitting and Underfitting Illustration",
+       x = "X",
+       y = "Y")
+
+# Print the plot
+print(plot)
+
