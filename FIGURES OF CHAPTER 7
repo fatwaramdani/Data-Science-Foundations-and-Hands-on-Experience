@@ -154,3 +154,52 @@ ggplot() +
        y = "Latitude",
        caption = "Source: Your Data") +
   theme_minimal(base_size = 15)
+
+
+# Figure 7.18 Colourblind-friendly palette.
+# Install necessary packages (if not already installed)
+if (!requireNamespace("viridis", quietly = TRUE)) install.packages("viridis")
+
+# Load the viridis package
+library(viridis)
+
+# Define a custom colorblind-friendly palette
+colorblind_palette <- c(
+  "#E69F00", # Orange
+  "#56B4E9", # Sky Blue
+  "#009E73", # Bluish Green
+  "#F0E442", # Yellow
+  "#0072B2", # Blue
+  "#D55E00", # Vermilion
+  "#CC79A7"  # Reddish Purple
+)
+
+# Combine with the viridis palette for comparison
+viridis_palette <- viridis(7)
+
+# Create a data frame for plotting
+palette_data <- data.frame(
+  Color = rep(c("Colourblind-Friendly", "Viridis"), each = 7),
+  Index = rep(1:7, 2),
+  Hex = c(colorblind_palette, viridis_palette)
+)
+
+# Plot the palettes
+library(ggplot2)
+
+ggplot(palette_data, aes(x = Index, y = Color, fill = Hex)) +
+  geom_tile(color = "black", size = 0.5) +
+  scale_fill_identity() +
+  theme_minimal(base_size = 20) +
+  labs(
+    title = "Colourblind-Friendly Palette Comparison",
+    x = "Index",
+    y = "Palette Type",
+    subtitle = "Custom Palette (Colourblind-Friendly) vs. Viridis Palette"
+  ) +
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    plot.title = element_text(size = 16, face = "bold"),
+    plot.subtitle = element_text(size = 14)
+  )
