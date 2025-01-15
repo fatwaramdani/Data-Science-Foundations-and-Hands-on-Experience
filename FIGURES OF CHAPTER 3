@@ -716,16 +716,6 @@ library(ggplot2)
 library(cluster)
 library(dbscan)
 library(factoextra)
-
-# Use the iris dataset
-data(iris)
-iris_data <- iris[, -5] # Remove the Species column for clustering
-
-# --- Hierarchical Clustering ---
-# Load necessary libraries
-library(ggplot2)
-library(cluster)
-library(factoextra)
 library(ggdendro)
 
 # Use the iris dataset
@@ -747,7 +737,7 @@ dendro_data <- dendro_data(hc)
 ggplot(segment(dendro_data)) +
   geom_segment(aes(x = x, y = y, xend = xend, yend = yend)) +
   theme_minimal(base_size = 20) +
-  labs(title = "",
+  labs(title = "A",
        x = "Samples",
        y = "Height") +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
@@ -762,7 +752,7 @@ fviz_cluster(kmeans_result,
              data = iris_data, 
              geom = "point", 
              ellipse.type = "convex", 
-             main = "K-Means Clustering")
+             main = "B")
 
 # --- Density-Based Clustering (DBSCAN) ---
 # Standardize the data for DBSCAN
@@ -779,8 +769,9 @@ iris_dbscan$Cluster <- as.factor(dbscan_result$cluster)
 ggplot(iris_dbscan, aes(x = Petal.Length, y = Petal.Width, color = Cluster)) +
   geom_point(size = 3) +
   scale_color_manual(values = c("gray", "red", "blue", "green", "orange")) +
-  labs(title = "DBSCAN Clustering", color = "Cluster") +
+  labs(title = "C") +
   theme_minimal(base_size = 20)
+
 
 
 #Figure 3.22 Illustration of logistic regression.
