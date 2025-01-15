@@ -86,7 +86,7 @@ mtcars$is_outlier <- abs(mtcars$z_score) > outlier_threshold
 ggplot(mtcars, aes_string(x = "rownames(mtcars)", y = variable)) +
   geom_point(aes(color = is_outlier), size = 3) +  # Color points based on outlier status
   geom_text(aes(label = ifelse(is_outlier, rownames(mtcars), "")), 
-            hjust = -0.2, vjust = -0.5, size = 3) +  # Add labels for outliers
+           hjust = -0.1, vjust = -0.2, size = 5) +  # Add labels for outliers
   labs(title = paste("Outliers Detection using Z-Score Method (", variable, ")", sep = ""),
        x = "Car Model", y = variable) +
   scale_color_manual(values = c("black", "red"), name = "Outlier", 
@@ -206,7 +206,11 @@ ggplot(mtcars, aes(x = mpg, y = hp)) +
   labs(title = "DBSCAN Clustering of mtcars dataset with Outliers in Red",
        x = "Miles Per Gallon (mpg)",
        y = "Horsepower (hp)") +
-  theme(legend.position = "none")
+  theme(
+    legend.position = "none",
+    axis.title.x = element_text(size = 20), # Increase x-axis label size
+    axis.title.y = element_text(size = 20)  # Increase y-axis label size
+  )
 
 
 #Figure 3.8 Plot of outliers detection using Isolation Forest method of mpg and horse power variables of mtcars dataset.
