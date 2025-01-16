@@ -82,6 +82,8 @@ ggplot(summary_stats_long, aes(x = Variable, y = Value, fill = Metric)) +
        x = "Variable", y = "Value") +
   theme_minimal(base_size = 20)
 
+
+
 # Figure 4.3 Skewness and kurtosis.
 # Load necessary libraries
 library(ggplot2)
@@ -118,6 +120,8 @@ ggplot(skew_data, aes(x = value, fill = type)) +
   theme(legend.position = "none")
 
 
+
+# Figure 4.4 Histograms
 # Load necessary library
 library(ggplot2)
 
@@ -128,7 +132,6 @@ data <- data.frame(
   y = rnorm(100, mean = 30, sd = 5)   # Random normal data for y
 )
 
-# Figure 4.4 Histograms
 ggplot(data, aes(x = x)) +
   geom_histogram(binwidth = 5, fill = "skyblue", color = "black") +
   labs(title = "Histogram of X", x = "Values of X", y = "Frequency", size = 5) +
@@ -150,8 +153,8 @@ ggplot(data, aes(x = "", y = x)) +
             aes(x = "", y = x, label = "Outlier"), color = "red", size = 5, hjust = -0.2) +
   theme_minimal(base_size = 15) +
   theme(plot.title = element_text(size = 14), # Adjusted title size for better readability
-        axis.title.y = element_text(size = 12), 
-        axis.text = element_text(size = 10)) 
+        axis.title.y = element_text(size = 14), 
+        axis.text = element_text(size = 14)) 
 
 
 # Figure 4.6 Scatterplot.
@@ -198,50 +201,9 @@ ggplot(data, aes(x = x, y = y)) +
        x = "X-axis",
        y = "Y-axis")
 
-# Figure 4.8 Illustrate the normal distribution, binomial distribution, and poisson distribution.
+# Figure 4.9 Illustrate the normal distribution, binomial distribution, and poisson distribution.
 
-# Load required library
-library(ggplot2)
 
-# Plot Normal Distribution
-plot_normal <- function() {
-  x <- seq(-4, 4, length = 1000)
-  y <- dnorm(x, mean = 0, sd = 1)  # Standard Normal Distribution
-  
-  ggplot(data.frame(x, y), aes(x, y)) +
-    geom_line(color = "blue", size = 1) +
-    ggtitle("Normal Distribution (mean = 0, sd = 1)") +
-    xlab("x") + ylab("Density") +
-    theme_minimal()
-}
-
-# Plot Binomial Distribution
-plot_binomial <- function() {
-  x <- 0:20  # Number of trials
-  y <- dbinom(x, size = 20, prob = 0.5)  # Binomial Distribution (n = 20, p = 0.5)
-  
-  ggplot(data.frame(x, y), aes(x, y)) +
-    geom_bar(stat = "identity", fill = "orange", color = "black") +
-    ggtitle("Binomial Distribution (n = 20, p = 0.5)") +
-    xlab("x") + ylab("Probability") +
-    theme_minimal()
-}
-
-# Plot Poisson Distribution
-plot_poisson <- function() {
-  x <- 0:20  # Range of events
-  y <- dpois(x, lambda = 5)  # Poisson Distribution (lambda = 5)
-  
-  ggplot(data.frame(x, y), aes(x, y)) +
-    geom_bar(stat = "identity", fill = "green", color = "black") +
-    ggtitle("Poisson Distribution (lambda = 5)") +
-    xlab("x") + ylab("Probability") +
-    theme_minimal()
-}
-
-# Plot all distributions
-library(gridExtra)
-grid.arrange(plot_normal(), plot_binomial(), plot_poisson(), nrow = 1)
 
 
 #Figure 4.10 Illustration of population and sample.
