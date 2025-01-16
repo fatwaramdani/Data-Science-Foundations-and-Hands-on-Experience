@@ -477,7 +477,85 @@ summary_stats <- data.frame(
 # Print summary statistics
 print(summary_stats)
 
-#Figure 5.13 Representations involving hue, value and transparency, in addition with resolution, fuzziness, and blurring. 
+Figure 5.13 Simulation of uncertainty.
+# Install required packages
+if (!require("shiny")) install.packages("shiny")
+if (!require("ggplot2")) install.packages("ggplot2")
+if (!require("dplyr")) install.packages("dplyr")
+
+# Load libraries
+library(shiny)
+library(ggplot2)
+library(dplyr)
+
+# UI for the Shiny app
+ui <- fluidPage(
+  titlePanel("Uncertainty Visualization: Political Party Likelihoods"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      actionButton("spin_button", "SPIN AGAIN", class = "btn-primary"),
+      p("Click the button to simulate new results.")
+    ),
+    
+    mainPanel(
+      plotOutput("compass_plot"),
+      p("Each compass represents a region. The colored area shows the likelihood of each party winning.")
+    )
+  )
+)
+
+# Server logic for the Shiny app
+server <- function(input, output, session) {
+  # Function to simulate random data
+  simulate_data <- reactive({
+    input$spin_button  # React to button clicks
+    
+    regions <- c("Region A", "Region B", "Region C", "Region D")
+    parties <- c("Party 1", "Party 2", "Party 3", "Party 4")
+    
+    # Generate random likelihoods for each party in each region
+    data <- expand.grid(Region = regions, Party = parties) %>%
+      mutate(
+        Likelihood = runif(nrow(.), min = 0, max = 1)
+      ) %>%
+      group_by(Region) %>%
+      mutate(
+        Likelihood = Likelihood / sum(Likelihood)  # Normalize to sum to 1
+      )
+    return(data)
+  })
+  
+  # Render the compass plot
+  output$compass_plot <- renderPlot({
+    data <- simulate_data()
+    
+    ggplot(data, aes(x = Party, y = Likelihood, fill = Party)) +
+      geom_bar(stat = "identity", position = "stack") +
+      facet_wrap(~ Region) +
+      coord_polar() +
+      scale_fill_brewer(palette = "Set3") +
+      theme_minimal() +
+      theme(
+        axis.text.x = element_text(size = 14),  # Increase axis text size
+        axis.title.x = element_text(size = 16, face = "bold"),  # Increase x-axis title size
+        axis.title.y = element_text(size = 16, face = "bold"),  # Increase y-axis title size
+        strip.text = element_text(size = 16, face = "bold"),    # Increase facet label size
+        plot.title = element_text(size = 20, face = "bold", hjust = 0.5),  # Increase title size
+        legend.text = element_text(size = 14),  # Increase legend text size
+        legend.title = element_text(size = 16, face = "bold")   # Increase legend title size
+      ) +
+      labs(title = "Uncertainty Visualization: Compass of Likelihoods",
+           fill = "Political Party")
+  })
+}
+
+# Run the Shiny app
+shinyApp(ui = ui, server = server)
+
+
+
+#Figure 5.14 Representations involving hue, value and transparency, in addition with resolution, fuzziness, and blurring. 
 library(ggplot2)
 library(scales)
 library(ggfx) # For blurring effects
@@ -526,7 +604,7 @@ print(plot)
 
 
 
-#Figure 5.14  Variable and uncertainty is shown side-by-side.
+#Figure 5.15  Variable and uncertainty is shown side-by-side.
 # Load necessary libraries
 library(ggplot2)
 library(gridExtra) # To arrange plots side-by-side
