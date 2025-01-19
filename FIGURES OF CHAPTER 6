@@ -334,12 +334,15 @@ digraph CNN {
 # Render the CNN diagram
 grViz(cnn_diagram)
 
+
+
 #Figure 6.12 GBM of Boston dataset.
 # Install and load required packages
 #install.packages("gbm")
 #install.packages("caret")  # For dataset splitting
 library(gbm)
 library(caret)
+library(ggplot2)
 
 # Load a sample dataset (e.g., Boston housing data)
 data("Boston", package = "MASS")
@@ -358,12 +361,28 @@ gbm_model <- gbm(medv ~ .,
                  shrinkage = 0.01, 
                  interaction.depth = 3)
 
-# Plot the model's performance
-# Plot the relative influence of the predictors
-summary(gbm_model)
+# Extract the relative influence of predictors
+rel_influence <- summary(gbm_model, plotit = FALSE)
+rel_influence_df <- as.data.frame(rel_influence)
+colnames(rel_influence_df) <- c("Variable", "RelativeInfluence")
+
+# Plot the relative influence using ggplot2
+ggplot(rel_influence_df, aes(x = reorder(Variable, RelativeInfluence), y = RelativeInfluence)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  theme_minimal(base_size = 16) +  # Increase base font size
+  labs(title = "Relative Influence of Predictors", 
+       x = "Predictors", 
+       y = "Relative Influence")
 
 # Plot the Partial Dependence Plots (PDP) for a specific variable, e.g., "lstat"
-plot(gbm_model, i.var = "lstat")
+pdp_data <- plot(gbm_model, i.var = "lstat", return.grid = TRUE)  # Get PDP data
+ggplot(pdp_data, aes(x = lstat, y = y)) +
+  geom_line(color = "steelblue", size = 1) +
+  theme_minimal(base_size = 16) +  # Increase base font size
+  labs(title = "Partial Dependence Plot for 'lstat'", 
+       x = "LSTAT (Lower Status of Population)", 
+       y = "Partial Dependence")
 
 # Make predictions on the test set
 predictions <- predict(gbm_model, testData, n.trees = 100)
@@ -371,6 +390,8 @@ predictions <- predict(gbm_model, testData, n.trees = 100)
 # Evaluate the model (e.g., RMSE)
 rmse <- sqrt(mean((predictions - testData$medv)^2))
 cat("RMSE on test data:", rmse, "\n")
+
+
 
 #Figure 6.13 Illustration of GMM.
 # Load required packages
