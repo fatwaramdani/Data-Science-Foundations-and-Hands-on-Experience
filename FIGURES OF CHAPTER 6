@@ -44,6 +44,12 @@ tree_model <- rpart::rpart(as.formula(paste(colnames(tree)[2], "~", paste(colnam
 rpart.plot(tree_model)
 
 Figure 6.5 Error rates and variable of importance of Random Forest model using iris dataset.
+# Install necessary package if not already installed
+if (!require("randomForest")) install.packages("randomForest", dependencies = TRUE)
+if (!require("ggplot2")) install.packages("ggplot2", dependencies = TRUE)
+if (!require("rpart.plot")) install.packages("rpart.plot", dependencies = TRUE)
+
+
 # Load required libraries
 library(randomForest)
 library(ggplot2)
@@ -63,6 +69,8 @@ print(rf_model)
 
 # Plot the model's error rates
 plot(rf_model, main = "Error Rates of Random Forest Model")
+legend("topright", legend = c("Overall", "Setosa", "Versicolor", "Virginica"), 
+       col = c("black", "red", "green", "blue"), lty = 1, cex = 1.5)
 
 # Visualize variable importance
 importance_df <- as.data.frame(importance(rf_model))
@@ -83,6 +91,7 @@ tree <- getTree(rf_model, k = 1, labelVar = TRUE)
 tree_model <- rpart::rpart(as.formula(paste(colnames(tree)[2], "~", paste(colnames(tree)[-1], collapse = "+"))),
                            data = iris, method = "class")
 rpart.plot(tree_model)
+
 
 #Figure 6.6 CART model.
 # Load necessary libraries
