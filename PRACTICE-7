@@ -384,11 +384,21 @@ map <- tm_shape(lulc_sieved) +
   tm_raster(palette = mycolor, title = "Legend") +
   tm_layout(
     main.title = "Land Use Land Cover Map",
+    main.title.size = 2,               # Increase main title size
+    legend.title.size = 1.5,           # Increase legend title size
+    legend.text.size = 1.2,            # Increase legend text size
     legend.outside = FALSE,
-    legend.position = c("right", "top")
+    legend.position = c("right", "top"),
+    frame = FALSE                      # Optionally remove the frame
   ) +
-  tm_scale_bar() +
-  tm_compass(position = c("left", "top"))
+  tm_scale_bar(
+    text.size = 1                      # Increase scale bar text size
+  ) +
+  tm_compass(
+    position = c("left", "top"),
+    text.size = 1                      # Increase compass text size
+  )
+
 
 # Plot the map
 map
