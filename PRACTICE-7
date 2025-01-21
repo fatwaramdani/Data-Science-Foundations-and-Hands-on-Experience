@@ -81,16 +81,19 @@ merge_data <- left_join(japan, japan_data, by="ID")
 # Quick map of 2010 population
 tm_shape(merge_data) + 
   tm_polygons("POP2010") +
+  tm_layout(title.size = 1.5, legend.text.size = 1.2, legend.title.size = 1.3) +
   tmap_options(check.and.fix = TRUE, max.categories = 47)
 
 # Quick map of 2019 population
 tm_shape(merge_data) + 
   tm_polygons("POP2019") +
+  tm_layout(title.size = 1.5, legend.text.size = 1.2, legend.title.size = 1.3) +
   tmap_options(check.and.fix = TRUE, max.categories = 47)
 
 # Quick map of population change
 tm_shape(merge_data) + 
   tm_polygons("POPULATION_CHANGE") +
+  tm_layout(title.size = 1.5, legend.text.size = 1.2, legend.title.size = 1.3) +
   tmap_options(check.and.fix = TRUE, max.categories = 47)
 
 # Switch to interactive map view
@@ -117,26 +120,33 @@ tmap_mode("plot")
 tm_shape(merge_data) + 
   tm_fill("POPULATION_CHANGE", style = "pretty", n = 5,
           palette = "RdBu", title = "Population Changes", legend.hist = TRUE) +
-  tm_layout(main.title = "Japan Population Changes (2010 to 2019)",
-            main.title.position = "center",
-            main.title.color = "blue") +
-  tm_borders(alpha=.4) +
-  tm_compass(type="rose", position=c("right", "top"), size = 2)
+  tm_layout(
+    main.title = "Japan Population Changes (2010 to 2019)",
+    main.title.position = "center",
+    main.title.color = "blue",
+    main.title.size = 2  # Increase main title font size
+  ) +
+  tm_borders(alpha = .4) +
+  tm_compass(type = "rose", position = c("right", "top"), size = 2)
 
 # Add scale bar and change compass style
 tm_shape(merge_data) + 
   tm_fill("POPULATION_CHANGE", style = "pretty", n = 5,
           palette = "RdBu", title = "Population Changes") +
-  tm_layout(main.title = "Japan Population Changes (2010 to 2019)",
-            main.title.position = "center",
-            main.title.color = "blue") +
-  tm_borders(alpha=.4) +
-  tm_compass(type="4star", position=c("right", "top"), size = 2) +
+  tm_layout(
+    main.title = "Japan Population Changes (2010 to 2019)",
+    main.title.position = "center",
+    main.title.color = "blue",
+    main.title.size = 2  # Increase main title font size
+  ) +
+  tm_borders(alpha = .4) +
+  tm_compass(type = "4star", position = c("right", "top"), size = 2) +
   tm_scale_bar(
-    text.size = 0.5,
+    text.size = 0.8,  # Increase font size of scale bar text
     color.dark = "black",
     color.light = "white",
-    lwd = 1)
+    lwd = 1
+  )
 
 library(RColorBrewer)
 display.brewer.all()
