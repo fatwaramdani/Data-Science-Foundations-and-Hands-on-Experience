@@ -13,7 +13,7 @@ install.packages("readr")
 library(readr)
 
 # Load your data (assuming it's a CSV file named "data.csv")
-AWH <- read.csv("annual-working-hours-vs-gdp-per-capita-pwt.csv")
+AWH <- read.csv("data.csv")
 
 # View the first few rows of your data
 head(AWH)
