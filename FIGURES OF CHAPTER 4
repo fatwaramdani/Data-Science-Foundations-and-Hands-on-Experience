@@ -104,7 +104,7 @@ pos_skew_data <- rbeta(1000, 5, 2)
 # Create a data frame with the three datasets
 skew_data <- data.frame(
   value = c(neg_skew_data, normal_data, pos_skew_data),
-  type = rep(c("Negative Skew", "Normal", "Positive Skew"), each = 1000)
+  type = rep(c("Positive Skew", "Normal", "Negative Skew"), each = 1000)
 )
 
 # Plot the data using ggplot
